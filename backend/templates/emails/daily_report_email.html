@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
+        .container { max-width: 520px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 40px; }
+        .stat { font-size: 48px; font-weight: 700; color: #2563eb; text-align: center; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 24px; color: #64748b; font-size: 13px; }
+        h2 { margin: 0 0 16px; color: #1e293b; }
+        p { color: #475569; line-height: 1.6; text-align: center; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 style="text-align:center;">Daily Enquiry Report</h2>
+        <p>Report for <strong>{{ date }}</strong></p>
+        <div class="stat">{{ count }}</div>
+        <p>enquiries received</p>
+        <p>Please find the detailed XLSX report attached to this email.</p>
+        {% if count == 0 %}
+        <p style="color:#94a3b8; font-size:13px;">No enquiries were received on this date. The attached file contains headers only.</p>
+        {% endif %}
+        <div class="footer">
+            <p>This is an automated daily report.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
+        .container { max-width: 520px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 40px; }
+        .otp-code { letter-spacing: 12px; font-size: 36px; font-weight: 700; color: #2563eb; text-align: center; padding: 20px 0; background: #eff6ff; border-radius: 8px; margin: 24px 0; }
+        .footer { text-align: center; margin-top: 32px; color: #64748b; font-size: 13px; }
+        h2 { margin: 0 0 16px; color: #1e293b; }
+        p { color: #475569; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Verify Your Enquiry</h2>
+        <p>Hello {{ name }},</p>
+        <p>Thank you for your enquiry about <strong>{{ category }}</strong>. Please use the following OTP to verify your submission:</p>
+        <div class="otp-code">{{ otp_code }}</div>
+        <p>This code is valid for <strong>{{ expiry_minutes }} minutes</strong>. Do not share this code with anyone.</p>
+        <div class="footer">
+            <p>If you did not make this request, please ignore this email.</p>
+        </div>
+    </div>
+</body>
+</html>

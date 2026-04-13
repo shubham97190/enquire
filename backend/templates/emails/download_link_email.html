@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
+        .container { max-width: 520px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 40px; }
+        .btn { display: inline-block; background: #2563eb; color: #fff !important; padding: 14px 40px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; margin: 20px 0; }
+        .info { background: #f0fdf4; padding: 16px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #22c55e; }
+        .footer { text-align: center; margin-top: 32px; color: #64748b; font-size: 13px; }
+        h2 { margin: 0 0 16px; color: #1e293b; }
+        p { color: #475569; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Your Catalogue Download Link</h2>
+        <p>Hello {{ name }},</p>
+        <p>Your enquiry has been verified successfully. Click the button below to download the <strong>{{ category }}</strong> catalogue:</p>
+        <p style="text-align:center;">
+            <a href="{{ download_url }}" class="btn">Download Catalogue</a>
+        </p>
+        <div class="info">
+            <p style="margin:0;"><strong>Note:</strong></p>
+            <ul style="margin:8px 0 0; padding-left:20px;">
+                <li>This link expires in <strong>{{ expiry_hours }} hours</strong></li>
+                <li>Maximum <strong>{{ max_downloads }} downloads</strong> allowed</li>
+            </ul>
+        </div>
+        <p style="font-size:13px; color:#94a3b8;">If the button doesn't work, copy and paste this link: {{ download_url }}</p>
+        <div class="footer">
+            <p>Thank you for your interest.</p>
+        </div>
+    </div>
+</body>
+</html>

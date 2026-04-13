@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; margin: 0; padding: 0; }
+        .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); padding: 40px; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th { text-align: left; padding: 10px 12px; background: #f1f5f9; color: #475569; font-size: 13px; text-transform: uppercase; letter-spacing: .5px; }
+        td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #1e293b; }
+        .badge { display: inline-block; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-yellow { background: #fef9c3; color: #854d0e; }
+        .footer { text-align: center; margin-top: 24px; color: #64748b; font-size: 13px; }
+        h2 { margin: 0 0 8px; color: #1e293b; }
+        p { color: #475569; line-height: 1.6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>New Verified Enquiry Received</h2>
+        <p>A new enquiry has been submitted and verified.</p>
+        <table>
+            <tr><th>Field</th><th>Details</th></tr>
+            <tr><td>Name</td><td>{{ name }}</td></tr>
+            <tr><td>Email</td><td>{{ email }}</td></tr>
+            <tr><td>Phone</td><td>{{ phone }}</td></tr>
+            <tr><td>Category</td><td>{{ category }}</td></tr>
+            <tr><td>Description</td><td>{{ description }}</td></tr>
+            <tr><td>Verified</td><td><span class="badge {% if verified %}badge-green{% else %}badge-yellow{% endif %}">{% if verified %}Yes{% else %}No{% endif %}</span></td></tr>
+            <tr><td>Verified At</td><td>{{ verified_at|default:"N/A" }}</td></tr>
+            <tr><td>Submitted At</td><td>{{ created_at }}</td></tr>
+        </table>
+        <div class="footer">
+            <p>Please login to the admin panel to take further action.</p>
+        </div>
+    </div>
+</body>
+</html>
