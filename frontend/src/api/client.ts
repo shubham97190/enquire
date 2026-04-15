@@ -44,8 +44,15 @@ api.interceptors.response.use(
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
           localStorage.removeItem('user');
+          window.dispatchEvent(new Event('auth:logout'));
           window.location.href = '/admin/login';
         }
+      } else {
+        // No refresh token at all — clear any stale data and redirect
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('user');
+        window.dispatchEvent(new Event('auth:logout'));
+        window.location.href = '/admin/login';
       }
     }
     return Promise.reject(error);

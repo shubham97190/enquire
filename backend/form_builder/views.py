@@ -269,19 +269,23 @@ class PublicFormSubmitView(APIView):
 # ──────────────────────────────────────────────
 
 class AdminFormListCreateView(generics.ListCreateAPIView):
-    """Admin: List all forms / Create a new form."""
+    """Admin: List all forms / Create a new form.
+    SUPER_ADMIN sees all forms; STAFF sees only forms they created.
+    """
     permission_classes = [IsAdminUser]
     pagination_class = None
 
     def get_queryset(self):
-        return (
-            EnquiryForm.objects
-            .annotate(
-                field_count=Count('fields', filter=Q(fields__is_active=True)),
-                submission_count=Count('submissions'),
-            )
-            .order_by('-created_at')
-        )
+        user = self.request.user
+        base_qs = EnquiryForm.objects.annotate(
+            field_count=Count('fields', filter=Q(fields__is_active=True)),
+            submission_count=Count('submissions'),
+        ).order_by('-created_at')
+
+        if user.is_super_admin:
+            return base_qs
+        # STAFF only see forms they created
+        return base_qs.filter(created_by=user)
 
     def get_serializer_class(self):
         if self.request.method == 'POST':

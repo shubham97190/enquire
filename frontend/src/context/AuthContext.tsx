@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import type { AdminUser } from '../types';
 import * as api from '../api/endpoints';
 
@@ -13,17 +13,67 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function isTokenExpired(token: string): boolean {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    // exp is in seconds; add 10s buffer to account for clock skew
+    return payload.exp * 1000 < Date.now() + 10_000;
+  } catch {
+    return true;
+  }
+}
+
+function clearAuthStorage() {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+  localStorage.removeItem('user');
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AdminUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    const token = localStorage.getItem('access_token');
-    if (storedUser && token) {
-      setUser(JSON.parse(storedUser));
-    }
-    setLoading(false);
+    const initAuth = async () => {
+      const storedUser = localStorage.getItem('user');
+      const accessToken = localStorage.getItem('access_token');
+      const refreshToken = localStorage.getItem('refresh_token');
+
+      if (!storedUser || !accessToken) {
+        clearAuthStorage();
+        setLoading(false);
+        return;
+      }
+
+      if (!isTokenExpired(accessToken)) {
+        // Access token still valid
+        setUser(JSON.parse(storedUser));
+      } else if (refreshToken && !isTokenExpired(refreshToken)) {
+        // Access token expired but refresh token valid — try silent refresh
+        try {
+          const { data } = await axios.post('/api/admin/auth/refresh/', { refresh: refreshToken });
+          localStorage.setItem('access_token', data.access);
+          if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
+          setUser(JSON.parse(storedUser));
+        } catch {
+          clearAuthStorage();
+        }
+      } else {
+        // Both tokens expired — clear everything
+        clearAuthStorage();
+      }
+
+      setLoading(false);
+    };
+
+    initAuth();
+
+    // Listen for forced logout events dispatched by the API client
+    const handleForcedLogout = () => {
+      setUser(null);
+    };
+    window.addEventListener('auth:logout', handleForcedLogout);
+    return () => window.removeEventListener('auth:logout', handleForcedLogout);
   }, []);
 
   const login = async (username: string, password: string) => {

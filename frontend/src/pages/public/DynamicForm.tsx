@@ -10,9 +10,9 @@ import PhoneInput from '../../components/ui/PhoneInput';
 // ─── Field Label ──────────────────────────────────────
 function FieldLabel({ children, required }: { children: React.ReactNode; required?: boolean }) {
   return (
-    <label className="block text-[10px] font-semibold tracking-widest text-gray-500 uppercase mb-1.5">
+    <label className="block text-sm font-semibold text-gray-700 mb-2">
       {children}
-      {required && <span className="text-red-400 ml-0.5">*</span>}
+      {required && <span className="text-rose-500 ml-1">*</span>}
     </label>
   );
 }
@@ -205,25 +205,28 @@ function DynamicField({
   onChange: (val: string) => void;
 }) {
   const baseCls =
-    'w-full px-4 py-3 text-sm border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition placeholder:text-gray-300';
-  const cls = `${baseCls} ${error ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-white'}`;
+    'w-full px-4 py-3 text-sm border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition placeholder:text-gray-400 bg-white';
+  const cls = `${baseCls} ${error ? 'border-red-400 bg-red-50/60 focus:ring-red-400/20 focus:border-red-400' : 'border-gray-200 hover:border-gray-300'}`;
   const [showPassword, setShowPassword] = useState(false);
 
   switch (field.field_type) {
     case 'section_heading':
       return (
-        <div className="pt-4 pb-1">
-          <h3 className="text-base font-bold text-gray-800">{field.label}</h3>
+        <div className="pt-2 pb-1 border-b border-gray-100">
+          <h3 className="text-base font-bold text-gray-900">{field.label}</h3>
           {field.help_text && (
-            <p className="text-xs text-gray-400 mt-0.5">{field.help_text}</p>
+            <p className="text-xs text-gray-500 mt-1">{field.help_text}</p>
           )}
         </div>
       );
 
     case 'description_block':
       return (
-        <div className="bg-blue-50 rounded-xl p-4">
-          <p className="text-sm text-blue-800">{field.help_text || field.label}</p>
+        <div className="flex gap-3 bg-blue-50 border border-blue-100 rounded-xl p-4">
+          <svg className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p className="text-sm text-blue-800 leading-relaxed">{field.help_text || field.label}</p>
         </div>
       );
 
@@ -277,15 +280,21 @@ function DynamicField({
           <FieldLabel required={field.is_required}>{field.label}</FieldLabel>
           <div className="space-y-2 mt-1">
             {(field.options || []).map((opt) => (
-              <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer">
-                <input
-                  type="radio"
-                  name={field.id}
-                  checked={value === opt.value}
-                  onChange={() => onChange(opt.value)}
-                  className="text-blue-600 focus:ring-blue-500"
-                />
-                <span className="text-gray-700">{opt.label}</span>
+              <label
+                key={opt.value}
+                className={`flex items-center gap-3 px-4 py-3 border rounded-xl cursor-pointer transition ${
+                  value === opt.value
+                    ? 'border-blue-500 bg-blue-50 text-blue-800'
+                    : 'border-gray-200 hover:border-gray-300 bg-white text-gray-700'
+                }`}
+              >
+                <div className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
+                  value === opt.value ? 'border-blue-500' : 'border-gray-300'
+                }`}>
+                  {value === opt.value && <div className="w-2 h-2 rounded-full bg-blue-500" />}
+                </div>
+                <input type="radio" name={field.id} checked={value === opt.value} onChange={() => onChange(opt.value)} className="sr-only" />
+                <span className="text-sm font-medium">{opt.label}</span>
               </label>
             ))}
           </div>
@@ -297,15 +306,21 @@ function DynamicField({
     case 'checkbox':
       return (
         <div>
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input
-              type="checkbox"
-              checked={value === 'true'}
-              onChange={(e) => onChange(e.target.checked ? 'true' : '')}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-            />
-            <span className="text-gray-700">{field.label}</span>
-            {field.is_required && <span className="text-red-400">*</span>}
+          <label className={`flex items-center gap-3 px-4 py-3 border rounded-xl cursor-pointer transition ${
+            value === 'true' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300 bg-white'
+          }`}>
+            <div className={`w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border-2 transition ${
+              value === 'true' ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
+            }`}>
+              {value === 'true' && (
+                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <input type="checkbox" checked={value === 'true'} onChange={(e) => onChange(e.target.checked ? 'true' : '')} className="sr-only" />
+            <span className="text-sm font-medium text-gray-700">{field.label}</span>
+            {field.is_required && <span className="text-rose-500 ml-0.5">*</span>}
           </label>
           {field.help_text && <p className="text-[11px] text-gray-400 mt-1 ml-6">{field.help_text}</p>}
           {error && <p className="text-red-500 text-[11px] mt-1 ml-6">{error}</p>}
@@ -321,19 +336,26 @@ function DynamicField({
               const selected = value ? value.split(',') : [];
               const isChecked = selected.includes(opt.value);
               return (
-                <label key={opt.value} className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => {
-                      const next = isChecked
-                        ? selected.filter((v) => v !== opt.value)
-                        : [...selected, opt.value];
-                      onChange(next.join(','));
-                    }}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-gray-700">{opt.label}</span>
+                <label
+                  key={opt.value}
+                  className={`flex items-center gap-3 px-4 py-3 border rounded-xl cursor-pointer transition ${
+                    isChecked ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300 bg-white'
+                  }`}
+                >
+                  <div className={`w-5 h-5 rounded flex-shrink-0 flex items-center justify-center border-2 transition ${
+                    isChecked ? 'bg-blue-600 border-blue-600' : 'border-gray-300'
+                  }`}>
+                    {isChecked && (
+                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
+                  <input type="checkbox" checked={isChecked} onChange={() => {
+                    const next = isChecked ? selected.filter((v) => v !== opt.value) : [...selected, opt.value];
+                    onChange(next.join(','));
+                  }} className="sr-only" />
+                  <span className="text-sm font-medium text-gray-700">{opt.label}</span>
                 </label>
               );
             })}
@@ -348,22 +370,34 @@ function DynamicField({
         <div>
           <FieldLabel required={field.is_required}>{field.label}</FieldLabel>
           <div className="flex gap-3 mt-1">
-            {['yes', 'no'].map((opt) => (
-              <button
-                key={opt}
-                type="button"
-                onClick={() => onChange(opt)}
-                className={`flex-1 py-2.5 rounded-xl text-sm font-medium transition border ${
-                  value === opt
-                    ? opt === 'yes'
-                      ? 'bg-green-600 text-white border-green-600'
-                      : 'bg-red-500 text-white border-red-500'
-                    : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300'
-                }`}
-              >
-                {opt === 'yes' ? '✓ Yes' : '✗ No'}
-              </button>
-            ))}
+            <button
+              type="button"
+              onClick={() => onChange('yes')}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition border-2 ${
+                value === 'yes'
+                  ? 'bg-emerald-600 text-white border-emerald-600 shadow-md shadow-emerald-100'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-emerald-400 hover:text-emerald-700'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              Yes
+            </button>
+            <button
+              type="button"
+              onClick={() => onChange('no')}
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold transition border-2 ${
+                value === 'no'
+                  ? 'bg-rose-500 text-white border-rose-500 shadow-md shadow-rose-100'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-rose-400 hover:text-rose-700'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              No
+            </button>
           </div>
           {field.help_text && <p className="text-[11px] text-gray-400 mt-1">{field.help_text}</p>}
           {error && <p className="text-red-500 text-[11px] mt-1">{error}</p>}
@@ -642,13 +676,15 @@ export default function DynamicForm() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Paged navigation
+  const [currentPage, setCurrentPage] = useState(0);
+
   useEffect(() => {
     if (!slug) return;
     api
       .getPublicForm(slug)
       .then((data) => {
         setForm(data);
-        // Set defaults
         const defaults: Record<string, string> = {};
         data.fields.forEach((f) => {
           if (f.default_value) defaults[f.id] = f.default_value;
@@ -676,21 +712,45 @@ export default function DynamicForm() {
     }
   };
 
-  const validate = (): boolean => {
+  const nonInputTypes = new Set(['section_heading', 'description_block', 'hidden']);
+
+  // Group active fields into pages split by section_heading
+  const pages = (() => {
+    if (!form) return [];
+    const active = form.fields.filter((f) => f.is_active).sort((a, b) => a.sort_order - b.sort_order);
+    const groups: FormBuilderField[][] = [];
+    let current: FormBuilderField[] = [];
+    for (const field of active) {
+      if (field.field_type === 'section_heading' && current.length > 0) {
+        groups.push(current);
+        current = [field];
+      } else {
+        current.push(field);
+      }
+    }
+    if (current.length > 0) groups.push(current);
+    // If no section headings at all, keep single page
+    return groups.length === 0 ? [active] : groups;
+  })();
+
+  const totalPages = pages.length;
+  const currentFields = pages[currentPage] ?? [];
+  const isLastPage = currentPage === totalPages - 1;
+  const progress = totalPages > 1 ? ((currentPage + 1) / totalPages) * 100 : 100;
+
+  const validatePage = (pageIndex: number): boolean => {
     if (!form) return false;
     const errs: Record<string, string> = {};
-    const nonInputTypes = new Set(['section_heading', 'description_block', 'hidden']);
+    const fields = pages[pageIndex] ?? [];
 
-    form.fields.forEach((f) => {
-      if (!f.is_active || nonInputTypes.has(f.field_type)) return;
+    fields.forEach((f) => {
+      if (nonInputTypes.has(f.field_type)) return;
       const val = (values[f.id] || '').trim();
-
       if (f.is_required && !val) {
         errs[f.id] = `${f.label} is required`;
         return;
       }
       if (!val) return;
-
       if (f.field_type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
         errs[f.id] = 'Valid email required';
       }
@@ -698,30 +758,21 @@ export default function DynamicForm() {
         errs[f.id] = 'Valid phone number required';
       }
       if (f.field_type === 'url' && !/^https?:\/\/.+/.test(val)) {
-        errs[f.id] = 'Valid URL required (start with http:// or https://)';
+        errs[f.id] = 'Valid URL required (must start with http:// or https://)';
       }
-      if (f.min_length && val.length < f.min_length) {
-        errs[f.id] = `Min ${f.min_length} characters`;
-      }
-      if (f.max_length && val.length > f.max_length) {
-        errs[f.id] = `Max ${f.max_length} characters`;
-      }
+      if (f.min_length && val.length < f.min_length) errs[f.id] = `Minimum ${f.min_length} characters`;
+      if (f.max_length && val.length > f.max_length) errs[f.id] = `Maximum ${f.max_length} characters`;
       if (f.field_type === 'number' || f.field_type === 'range_slider') {
         const num = Number(val);
-        if (isNaN(num)) {
-          errs[f.id] = 'Must be a number';
-        } else {
-          if (f.min_value !== null && f.min_value !== undefined && num < f.min_value) {
-            errs[f.id] = `Min value: ${f.min_value}`;
-          }
-          if (f.max_value !== null && f.max_value !== undefined && num > f.max_value) {
-            errs[f.id] = `Max value: ${f.max_value}`;
-          }
+        if (isNaN(num)) { errs[f.id] = 'Must be a number'; }
+        else {
+          if (f.min_value != null && num < f.min_value) errs[f.id] = `Minimum value: ${f.min_value}`;
+          if (f.max_value != null && num > f.max_value) errs[f.id] = `Maximum value: ${f.max_value}`;
         }
       }
     });
 
-    setErrors(errs);
+    setErrors((prev) => ({ ...prev, ...errs }));
     if (Object.keys(errs).length > 0) {
       const firstKey = Object.keys(errs)[0];
       document.getElementById(`field-${firstKey}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -729,13 +780,24 @@ export default function DynamicForm() {
     return Object.keys(errs).length === 0;
   };
 
+  const handleNext = () => {
+    if (!validatePage(currentPage)) return;
+    setCurrentPage((p) => Math.min(p + 1, totalPages - 1));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBack = () => {
+    setCurrentPage((p) => Math.max(p - 1, 0));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!slug || !form || !validate()) return;
+    if (!slug || !form) return;
+    if (!validatePage(currentPage)) return;
 
     setSubmitting(true);
     try {
-      // ── Device info via react-device-detect ──────────────────
       const detected = deviceDetect(navigator.userAgent);
       const deviceType = isTablet ? 'tablet' : isMobile ? 'mobile' : 'desktop';
       const deviceInfo: Record<string, unknown> = {
@@ -752,27 +814,17 @@ export default function DynamicForm() {
         language: navigator.language,
       };
 
-      // ── Location via ipinfo.io ───────────────────────────────
       let locationInfo: Record<string, unknown> = {};
       try {
         const token = (import.meta as unknown as { env: Record<string, string> }).env.VITE_IPINFO_TOKEN;
-        const url = token
-          ? `https://ipinfo.io?token=${token}`
-          : 'https://ipinfo.io/json';
+        const url = token ? `https://ipinfo.io?token=${token}` : 'https://ipinfo.io/json';
         const { data } = await axios.get(url, { timeout: 5000 });
         locationInfo = {
-          ip: data.ip ?? '',
-          city: data.city ?? '',
-          region: data.region ?? '',
-          country: data.country ?? '',
-          loc: data.loc ?? '',
-          org: data.org ?? '',
-          postal: data.postal ?? '',
-          timezone: data.timezone ?? '',
+          ip: data.ip ?? '', city: data.city ?? '', region: data.region ?? '',
+          country: data.country ?? '', loc: data.loc ?? '', org: data.org ?? '',
+          postal: data.postal ?? '', timezone: data.timezone ?? '',
         };
-      } catch {
-        // silently fail — submission continues without location
-      }
+      } catch { /* silently ignore */ }
 
       const result = await api.submitPublicForm(slug, {
         answers: values,
@@ -808,20 +860,24 @@ export default function DynamicForm() {
     }
   };
 
+  // ── Loading ─────────────────────────────────────────
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-sm text-gray-500">Loading form…</p>
+        </div>
       </div>
     );
   }
 
   if (notFound) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="text-center max-w-sm">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 px-4">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-10 text-center max-w-sm w-full">
+          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
           </div>
@@ -834,10 +890,10 @@ export default function DynamicForm() {
 
   if (inactive) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="text-center max-w-sm">
-          <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg className="w-8 h-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-amber-50 px-4">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-10 text-center max-w-sm w-full">
+          <div className="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg className="w-8 h-8 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
@@ -850,81 +906,167 @@ export default function DynamicForm() {
 
   if (!form) return null;
 
-  const activeFields = form.fields.filter((f) => f.is_active).sort((a, b) => a.sort_order - b.sort_order);
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* ── Mobile-first form layout ─────────────────────── */}
-      <div className="max-w-lg mx-auto px-4 py-6 sm:py-12">
-        {/* Logo / Branding */}
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-blue-600 rounded-xl mb-3">
-            <span className="text-white font-bold text-lg">E</span>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20">
+      <div className="max-w-2xl mx-auto px-4 py-8 sm:py-14">
 
-        {/* Badge */}
-        {form.unicode_text && (
-          <div className="text-center mb-3">
-            <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-widest rounded-full">
-              {form.unicode_text}
-            </span>
-          </div>
-        )}
-
-        {/* Title & Description */}
+        {/* ── Form Header ─────────────────────────────── */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
+          {/* Brand mark */}
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-200 mb-4">
+            <span className="text-white font-black text-xl">E</span>
+          </div>
+
+          {form.unicode_text && (
+            <div className="mb-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold uppercase tracking-widest rounded-full">
+                {form.unicode_text}
+              </span>
+            </div>
+          )}
+
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight tracking-tight">
             {form.title}
           </h1>
           {form.description && (
-            <p className="text-sm text-gray-500 mt-2 max-w-sm mx-auto leading-relaxed">
+            <p className="text-gray-500 text-sm mt-2.5 max-w-md mx-auto leading-relaxed">
               {form.description}
             </p>
           )}
         </div>
 
-        {/* Form Card */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          {/* Accent bar */}
-          <div className="h-1 bg-blue-600" />
+        {/* ── Progress (multi-page) ──────────────────── */}
+        {totalPages > 1 && (
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-gray-500">
+                Step {currentPage + 1} of {totalPages}
+              </span>
+              <span className="text-xs font-semibold text-blue-600">{Math.round(progress)}%</span>
+            </div>
+            <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-500"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            {/* Step bubbles */}
+            <div className="flex justify-between mt-3">
+              {pages.map((pg, i) => {
+                const heading = pg.find((f) => f.field_type === 'section_heading');
+                return (
+                  <div key={i} className="flex flex-col items-center gap-1">
+                    <div
+                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                        i < currentPage
+                          ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
+                          : i === currentPage
+                          ? 'bg-white text-blue-600 border-2 border-blue-600 shadow-sm'
+                          : 'bg-gray-100 text-gray-400'
+                      }`}
+                    >
+                      {i < currentPage ? (
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        i + 1
+                      )}
+                    </div>
+                    {heading && (
+                      <span className="text-[9px] text-gray-400 max-w-[60px] text-center leading-tight hidden sm:block truncate">
+                        {heading.label}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
-          <form onSubmit={handleSubmit} className="px-5 sm:px-7 py-6 space-y-5" noValidate>
-            {activeFields.map((field) => (
-              <div key={field.id} id={`field-${field.id}`}>
-                <DynamicField
-                  field={field}
-                  value={values[field.id] || ''}
-                  error={errors[field.id]}
-                  onChange={(val) => handleChange(field.id, val)}
-                />
+        {/* ── Form Card ──────────────────────────────── */}
+        <div className="bg-white rounded-3xl shadow-xl shadow-gray-100/80 border border-gray-100/80">
+          {/* Top accent bar with gradient */}
+          <div className="h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-t-3xl" />
+
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="px-6 sm:px-10 py-8 space-y-6">
+              {currentFields.map((field) => (
+                <div
+                  key={field.id}
+                  id={`field-${field.id}`}
+                  className={field.field_type === 'section_heading' ? '' : field.field_type === 'description_block' ? '' : ''}
+                >
+                  <DynamicField
+                    field={field}
+                    value={values[field.id] || ''}
+                    error={errors[field.id]}
+                    onChange={(val) => handleChange(field.id, val)}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* ── Navigation Buttons ───────────────────── */}
+            <div className="px-6 sm:px-10 pb-8">
+              <div className={`flex gap-3 ${currentPage > 0 ? 'justify-between' : 'justify-end'}`}>
+                {currentPage > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleBack}
+                    className="flex items-center gap-2 px-5 py-3 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Back
+                  </button>
+                )}
+
+                {!isLastPage ? (
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-200 transition"
+                  >
+                    Continue
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </button>
+                ) : (
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {submitting ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        Submitting…
+                      </>
+                    ) : (
+                      <>
+                        Submit
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      </>
+                    )}
+                  </button>
+                )}
               </div>
-            ))}
-
-            {/* Submit */}
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full py-3.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 focus:ring-4 focus:ring-blue-500/30 transition disabled:opacity-50 text-sm"
-            >
-              {submitting ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Submitting...
-                </span>
-              ) : (
-                'Submit'
-              )}
-            </button>
+            </div>
           </form>
         </div>
 
-        {/* Footer */}
-        <p className="text-center text-[11px] text-gray-400 mt-6">
-          Powered by Enquire
+        {/* ── Footer ─────────────────────────────────── */}
+        <p className="text-center text-xs text-gray-400 mt-6">
+          Powered by <span className="font-semibold text-gray-500">Enquire</span>
         </p>
       </div>
     </div>
