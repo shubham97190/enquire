@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 def generate_form_qr_code(form_instance):
     """Generate QR code PNG for the public form URL and save to the form's qr_code field."""
     frontend_url = settings.FRONTEND_URL.rstrip('/')
-    public_url = f"{frontend_url}/forms/{form_instance.slug}"
+    public_url = f"{frontend_url}/f/{form_instance.slug}"
 
     qr = qrcode.QRCode(
         version=1,

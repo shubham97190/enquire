@@ -665,7 +665,22 @@ export default function FormBuilder() {
                     className="flex-1 min-w-0 px-2 py-1.5 text-[11px] bg-gray-50 border border-gray-200 rounded-lg text-gray-600 truncate"
                   />
                   <button
-                    onClick={() => { navigator.clipboard.writeText(publicUrl); toast.success('Copied!'); }}
+                    onClick={() => {
+                      if (navigator.clipboard && window.isSecureContext) {
+                        navigator.clipboard.writeText(publicUrl).then(() => toast.success('Copied!'));
+                      } else {
+                        const ta = document.createElement('textarea');
+                        ta.value = publicUrl;
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.focus();
+                        ta.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        toast.success('Copied!');
+                      }
+                    }}
                     className="px-2.5 py-1.5 text-xs bg-blue-50 text-blue-600 border border-blue-100 rounded-lg hover:bg-blue-100 transition font-medium flex-shrink-0"
                   >
                     Copy
