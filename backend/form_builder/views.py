@@ -277,17 +277,25 @@ class PublicFormSubmitView(APIView):
 
         # Fire background email notification if enabled
         if form.email_notifications:
+            from .tasks import send_submission_notification, _do_send_submission_notification
+            import logging as _logging
+            _log = _logging.getLogger(__name__)
             try:
-                from .tasks import send_submission_notification
                 send_submission_notification.delay(str(submission.id))
             except Exception:
-                # Broker unavailable — log and continue; submission is already saved
-                import logging
-                logging.getLogger(__name__).warning(
-                    'Could not queue submission_notification for %s — broker unreachable',
+                # Broker unavailable — send synchronously so the email still reaches the owner
+                _log.warning(
+                    'Broker unreachable for submission %s — sending notification synchronously',
                     submission.id,
-                    exc_info=True,
                 )
+                try:
+                    _do_send_submission_notification(str(submission.id))
+                except Exception:
+                    _log.error(
+                        'Synchronous notification also failed for submission %s',
+                        submission.id,
+                        exc_info=True,
+                    )
 
         return Response(resp, status=status.HTTP_201_CREATED)
 

@@ -8,11 +8,10 @@ from django.utils.html import strip_tags
 logger = logging.getLogger(__name__)
 
 
-@shared_task(bind=True, max_retries=3, default_retry_delay=60)
-def send_submission_notification(self, submission_id: str):
+def _do_send_submission_notification(submission_id: str):
     """
-    Send an email notification to the form owner when a new submission arrives.
-    Only fires if the form has email_notifications=True and the owner has an email.
+    Core email-sending logic. Called by the Celery task AND directly as a
+    synchronous fallback when the broker is unavailable.
     """
     from .models import EnquirySubmission
 
@@ -73,22 +72,30 @@ def send_submission_notification(self, submission_id: str):
         'total_submissions': total_submissions,
     }
 
-    try:
-        html_message = render_to_string('emails/submission_notification_email.html', context)
-        plain_message = strip_tags(html_message)
+    html_message = render_to_string('emails/submission_notification_email.html', context)
+    plain_message = strip_tags(html_message)
 
-        send_mail(
-            subject=f'[Enquire] New submission on "{form.title}"',
-            message=plain_message,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[owner.email],
-            html_message=html_message,
-            fail_silently=False,
-        )
-        logger.info(
-            'Submission notification sent to %s for form %s (submission %s)',
-            owner.email, form.id, submission_id,
-        )
+    send_mail(
+        subject=f'[Enquire] New submission on "{form.title}"',
+        message=plain_message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[owner.email],
+        html_message=html_message,
+        fail_silently=False,
+    )
+    logger.info(
+        'Submission notification sent to %s for form %s (submission %s)',
+        owner.email, form.id, submission_id,
+    )
+
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_submission_notification(self, submission_id: str):
+    """
+    Celery task wrapper — retries up to 3 times on SMTP failure.
+    """
+    try:
+        _do_send_submission_notification(submission_id)
     except Exception as exc:
         logger.error('Failed to send submission notification: %s', exc)
         raise self.retry(exc=exc)
