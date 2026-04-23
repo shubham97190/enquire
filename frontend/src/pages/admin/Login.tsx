@@ -45,27 +45,29 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900 flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
-        {/* Card */}
-        <div className="bg-white rounded-2xl shadow-2xl p-8">
+    <div className="min-h-screen flex text-slate-900 bg-white">
+      {/* Left Column: Form */}
+      <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 sm:p-12 lg:p-24 bg-white relative z-10">
+        <div className="w-full max-w-md animate-fade-in text-left">
           {/* Brand */}
-          <div className="text-center mb-8">
-            <div className="w-14 h-14 bg-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-blue-200">
-              <span className="text-white font-bold text-2xl">S</span>
+          <div className="flex items-center gap-3 mb-10">
+            <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
+              <span className="text-white font-bold text-xl leading-none">S</span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-800">SurveyPanel</h1>
-            <p className="text-slate-400 text-sm mt-1">Sign in to your admin account</p>
+            <span className="text-xl font-bold tracking-tight text-slate-900">SurveyPanel</span>
           </div>
+
+          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-2">Welcome back</h1>
+          <p className="text-slate-500 mb-8 font-medium">Please enter your details to sign in to your admin account.</p>
 
           <form onSubmit={handleSubmit} className="space-y-5" noValidate>
             {/* Username */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Username
               </label>
-              <div className="relative">
-                <HiOutlineUser className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <div className="relative group">
+                <HiOutlineUser className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                 <input
                   type="text"
                   value={username}
@@ -73,27 +75,27 @@ export default function Login() {
                     setUsername(e.target.value);
                     if (errors.username) setErrors((p) => ({ ...p, username: undefined }));
                   }}
-                  className={`w-full pl-10 pr-4 py-2.5 rounded-xl border text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500/30 ${
+                  className={`w-full pl-11 pr-4 py-3 rounded-xl border bg-slate-50 text-sm font-medium transition-all focus:outline-none focus:ring-4 focus:bg-white ${
                     errors.username
-                      ? 'border-red-400 bg-red-50'
-                      : 'border-slate-200 focus:border-blue-500'
+                      ? 'border-red-400 bg-red-50 focus:ring-red-500/20'
+                      : 'border-transparent focus:border-blue-500 focus:ring-blue-500/20 hover:bg-slate-100'
                   }`}
                   placeholder="Enter your username"
                   autoComplete="username"
                 />
               </div>
               {errors.username && (
-                <p className="mt-1 text-xs text-red-500">{errors.username}</p>
+                <p className="mt-1.5 text-xs font-medium text-red-500">{errors.username}</p>
               )}
             </div>
 
             {/* Password */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label className="block text-sm font-semibold text-slate-700 mb-2">
                 Password
               </label>
-              <div className="relative">
-                <HiOutlineLockClosed className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <div className="relative group">
+                <HiOutlineLockClosed className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   value={password}
@@ -101,10 +103,10 @@ export default function Login() {
                     setPassword(e.target.value);
                     if (errors.password) setErrors((p) => ({ ...p, password: undefined }));
                   }}
-                  className={`w-full pl-10 pr-10 py-2.5 rounded-xl border text-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500/30 ${
+                  className={`w-full pl-11 pr-11 py-3 rounded-xl border bg-slate-50 text-sm font-medium transition-all focus:outline-none focus:ring-4 focus:bg-white ${
                     errors.password
-                      ? 'border-red-400 bg-red-50'
-                      : 'border-slate-200 focus:border-blue-500'
+                      ? 'border-red-400 bg-red-50 focus:ring-red-500/20'
+                      : 'border-transparent focus:border-blue-500 focus:ring-blue-500/20 hover:bg-slate-100'
                   }`}
                   placeholder="Enter your password"
                   autoComplete="current-password"
@@ -112,40 +114,78 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition p-1"
                   tabIndex={-1}
                 >
-                  {showPassword ? <HiOutlineEyeSlash className="w-4 h-4" /> : <HiOutlineEye className="w-4 h-4" />}
+                  {showPassword ? <HiOutlineEyeSlash className="w-5 h-5" /> : <HiOutlineEye className="w-5 h-5" />}
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1 text-xs text-red-500">{errors.password}</p>
+                <p className="mt-1.5 text-xs font-medium text-red-500">{errors.password}</p>
               )}
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 focus:ring-4 focus:ring-blue-500/20 transition disabled:opacity-50 text-sm"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
-                  Signing in...
-                </span>
-              ) : (
-                'Sign In'
-              )}
-            </button>
+            <div className="pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-3 bg-slate-900 text-white font-semibold rounded-xl hover:bg-slate-800 active:bg-slate-950 focus:ring-4 focus:ring-slate-900/20 transition-all disabled:opacity-50 text-sm shadow-lg shadow-slate-900/20"
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Signing in...
+                  </span>
+                ) : (
+                  'Sign In to Dashboard'
+                )}
+              </button>
+            </div>
           </form>
-        </div>
 
-        <p className="text-center text-xs text-slate-500 mt-6">
-          SurveyPanel Admin &copy; {new Date().getFullYear()}
-        </p>
+          <p className="text-center text-xs font-medium text-slate-500 mt-10">
+            SurveyPanel Admin &copy; {new Date().getFullYear()}
+          </p>
+        </div>
+      </div>
+
+      {/* Right Column: Visual / Graphic */}
+      <div className="hidden lg:flex w-1/2 relative bg-slate-900 p-12 items-center justify-center overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/30 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] rounded-full bg-blue-500/20 blur-[120px]" />
+        
+        {/* Abstract UI representation */}
+        <div className="relative z-10 w-full max-w-lg">
+          <div className="bg-white/10 backdrop-blur-3xl border border-white/20 rounded-3xl p-8 shadow-2xl">
+            <div className="flex gap-3 mb-8">
+              <div className="w-3 h-3 rounded-full bg-rose-500/80" />
+              <div className="w-3 h-3 rounded-full bg-amber-500/80" />
+              <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+            </div>
+            <h2 className="text-3xl font-bold text-white mb-4 leading-tight">
+              Create, Manage, and Analyze beautifully.
+            </h2>
+            <p className="text-slate-300 text-sm leading-relaxed mb-8">
+              Everything you need to gather feedback, visualize insights, and make data-driven decisions seamlessly from a powerful centralized dashboard.
+            </p>
+            
+            <div className="space-y-4">
+              <div className="w-full h-3 bg-white/20 rounded-full overflow-hidden">
+                <div className="w-3/4 h-full bg-blue-400 rounded-full" />
+              </div>
+              <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-1/2 h-full bg-white/30 rounded-full" />
+              </div>
+              <div className="w-full h-3 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-5/6 h-full bg-white/30 rounded-full" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

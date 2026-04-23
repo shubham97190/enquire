@@ -127,7 +127,7 @@ export default function FormList() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900">My Surveys</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            {forms.length} survey{forms.length !== 1 ? 's' : ''} · {forms.filter((f) => f.is_active).length} active
+            {forms.length} survey{forms.length !== 1 ? 's' : ''} · {forms.filter((f) => f.is_active).length} active · <span className="text-blue-500">Click any card to edit</span>
           </p>
         </div>
         <button
@@ -197,44 +197,55 @@ export default function FormList() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map((form) => (
-            <div key={form.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition group flex flex-col">
+            <div
+              key={form.id}
+              onClick={() => navigate(`/admin/surveys/${form.id}/builder`)}
+              className="group relative bg-white rounded-3xl border border-slate-100 shadow-sm hover:shadow-xl hover:border-blue-200 transition-all duration-300 flex flex-col overflow-hidden transform hover:-translate-y-1 cursor-pointer"
+            >
+              {/* Decorative top gradient */}
+              <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-blue-500 to-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+              
               {/* Card top */}
-              <div className="p-5 flex-1">
-                <div className="flex items-start justify-between gap-2 mb-3">
+              <div className="p-6 flex-1 bg-gradient-to-b from-white to-slate-50/50">
+                <div className="flex items-start justify-between gap-3 mb-4">
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 truncate text-sm leading-snug">{form.title}</h3>
-                    <p className="text-xs text-gray-400 mt-0.5 font-mono truncate">/{form.slug}</p>
+                    <h3 className="font-bold text-slate-900 truncate text-base leading-snug group-hover:text-blue-600 transition-colors">
+                      {form.title}
+                    </h3>
+                    <p className="text-sm text-slate-400 mt-1 font-mono truncate">/{form.slug}</p>
                   </div>
-                  <button onClick={(e) => handleToggleActive(form, e)}>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleToggleActive(form, e); }}
+                    className="flex-shrink-0 transition-transform active:scale-95"
+                  >
                     <StatusBadge active={form.is_active} />
                   </button>
                 </div>
 
                 {/* Stats row */}
-                <div className="flex items-center gap-3 mt-3">
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <div className="flex flex-wrap items-center gap-4 mt-6">
+                  <div className="flex items-center gap-2 text-sm text-slate-500 bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm">
+                    <svg className="w-4 h-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
                     </svg>
-                    <span>{form.field_count} fields</span>
+                    <span className="font-semibold text-slate-700">{form.field_count}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                    <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <div className="flex items-center gap-2 text-sm text-slate-500 bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm">
+                    <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
                     </svg>
-                    <span className="font-semibold text-gray-700">{form.submission_count}</span>
-                    <span>responses</span>
+                    <span className="font-bold text-slate-900">{form.submission_count}</span>
                   </div>
-                  <span className="ml-auto text-[10px] text-gray-400">
-                    {new Date(form.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: '2-digit' })}
+                  <span className="ml-auto text-xs font-medium text-slate-400 bg-slate-100/50 px-2.5 py-1 rounded-md">
+                    {new Date(form.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
                   </span>
                 </div>
 
                 {form.is_redirect && form.redirect_url && (
-                  <p className="text-xs text-blue-500 mt-2 truncate flex items-center gap-1">
-                    <svg className="w-3 h-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <p className="text-xs font-medium text-blue-500 mt-4 truncate flex items-center gap-1.5 bg-blue-50/50 px-2 py-1.5 rounded-md">
+                    <svg className="w-3.5 h-3.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                     </svg>
                     {form.redirect_url}
@@ -243,47 +254,49 @@ export default function FormList() {
               </div>
 
               {/* Action row */}
-              <div className="border-t border-gray-50 px-5 py-3 flex items-center gap-1 flex-wrap">
-                <Link
-                  to={`/admin/surveys/${form.id}/builder`}
-                  className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-blue-600 hover:bg-blue-50 rounded-lg transition"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
-                  </svg>
-                  Edit
-                </Link>
-                <Link
-                  to={`/admin/surveys/${form.id}/submissions`}
-                  className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 rounded-lg transition"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
-                  </svg>
-                  Responses
-                </Link>
-                <Link
-                  to={`/admin/surveys/${form.id}/report`}
-                  className="flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-violet-600 hover:bg-violet-50 rounded-lg transition"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
-                  </svg>
-                  Report
-                </Link>
-                <div className="ml-auto flex items-center gap-1">
+              <div className="bg-white border-t border-slate-100 px-6 py-4 flex items-center justify-between gap-2" onClick={(e) => e.stopPropagation()}>
+                <div className="flex gap-2">
+                  <Link
+                    to={`/admin/surveys/${form.id}/builder`}
+                    className="flex p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Edit Survey"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125" />
+                    </svg>
+                  </Link>
+                  <Link
+                    to={`/admin/surveys/${form.id}/submissions`}
+                    className="flex p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
+                    title="View Responses"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                    </svg>
+                  </Link>
+                  <Link
+                    to={`/admin/surveys/${form.id}/report`}
+                    className="flex p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
+                    title="Analytics Report"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z" />
+                    </svg>
+                  </Link>
+                </div>
+                <div className="flex items-center gap-1">
                   <button
                     onClick={(e) => handleDuplicate(form.id, e)}
-                    className="px-2.5 py-1.5 text-xs font-semibold text-gray-500 hover:bg-gray-50 rounded-lg transition"
+                    className="px-3 py-1.5 text-xs font-semibold text-slate-500 hover:bg-slate-100 rounded-lg transition-colors"
                   >
-                    Duplicate
+                    Copy
                   </button>
                   <button
                     onClick={(e) => handleDelete(form.id, form.title, e)}
-                    className="px-2.5 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-50 rounded-lg transition"
+                    className="px-3 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-50 rounded-lg transition-colors"
                   >
                     Delete
                   </button>

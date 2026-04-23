@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import * as api from '../../api/endpoints';
 import type { FormsDashboardData } from '../../types';
+import { useAuth } from '../../context/AuthContext';
 import {
   BarChart, Bar,
   LineChart, Line,
@@ -18,6 +19,8 @@ import {
   HiOutlineCalendar,
   HiOutlineClock,
   HiOutlineXCircle,
+  HiOutlineSparkles,
+  HiOutlinePencilSquare,
 } from 'react-icons/hi2';
 
 // ── Chart type options ────────────────────────────────
@@ -38,21 +41,24 @@ function StatCard({
   icon: Icon,
   color,
   bg,
+  trend,
 }: {
   label: string;
   value: number;
   icon: React.ElementType;
   color: string;
   bg: string;
+  trend?: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-center gap-4">
-      <div className={`w-12 h-12 ${bg} rounded-xl flex items-center justify-center flex-shrink-0`}>
-        <Icon className={`w-6 h-6 ${color}`} />
+    <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-start gap-4 hover:shadow-md transition-shadow">
+      <div className={`w-11 h-11 ${bg} rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5`}>
+        <Icon className={`w-5 h-5 ${color}`} />
       </div>
-      <div>
-        <p className="text-xs font-medium text-slate-500 uppercase tracking-wider">{label}</p>
-        <p className="text-2xl font-bold text-slate-800 mt-0.5">{value.toLocaleString()}</p>
+      <div className="flex-1 min-w-0">
+        <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">{label}</p>
+        <p className="text-2xl font-extrabold text-slate-800 tabular-nums">{value.toLocaleString()}</p>
+        {trend && <p className="text-[11px] text-slate-400 mt-1">{trend}</p>}
       </div>
     </div>
   );
@@ -185,8 +191,20 @@ function TrendChart({
 
 // ── Main Dashboard ────────────────────────────────────
 export default function Dashboard() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [data, setData] = useState<FormsDashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const isStaff = user?.role === 'STAFF';
+  const displayName = user?.first_name || user?.username || 'there';
+
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return 'Good morning';
+    if (h < 17) return 'Good afternoon';
+    return 'Good evening';
+  })();
 
   useEffect(() => {
     api
@@ -214,17 +232,35 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
-          <p className="text-sm text-slate-400 mt-0.5">Overview of your surveys and responses</p>
+      {/* ── Welcome Banner ──────────────────────── */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-6 shadow-lg">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute -top-4 -right-4 w-48 h-48 rounded-full bg-white/20" />
+          <div className="absolute bottom-0 left-1/3 w-32 h-32 rounded-full bg-white/10" />
         </div>
-        <Link
-          to="/admin/surveys"
-          className="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition"
-        >
-          + New Survey
-        </Link>
+        <div className="relative flex items-center justify-between gap-4 flex-wrap">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <HiOutlineSparkles className="w-4 h-4 text-blue-200" />
+              <span className="text-blue-200 text-sm font-medium">{greeting}, {displayName}!</span>
+            </div>
+            <h1 className="text-2xl font-bold text-white">
+              {isStaff ? 'My Dashboard' : 'Admin Dashboard'}
+            </h1>
+            <p className="text-blue-200 text-sm mt-1">
+              {isStaff
+                ? 'Overview of your surveys and responses'
+                : 'Platform-wide overview of all surveys and responses'}
+            </p>
+          </div>
+          <button
+            onClick={() => navigate('/admin/surveys')}
+            className="flex items-center gap-2 px-4 py-2.5 bg-white/15 hover:bg-white/25 text-white text-sm font-semibold rounded-xl transition border border-white/20 backdrop-blur-sm"
+          >
+            <HiOutlinePencilSquare className="w-4 h-4" />
+            New Survey
+          </button>
+        </div>
       </div>
 
       {/* ── Stat Cards ──────────────────────────── */}
@@ -341,7 +377,10 @@ export default function Dashboard() {
       {/* ── Recent Surveys Table ─────────────────── */}
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
-          <h3 className="text-sm font-semibold text-slate-700">Recent Surveys</h3>
+          <div>
+            <h3 className="text-sm font-semibold text-slate-700">Recent Surveys</h3>
+            <p className="text-[11px] text-slate-400 mt-0.5">Click a row to open in edit mode</p>
+          </div>
           <Link
             to="/admin/surveys"
             className="text-xs text-blue-600 hover:underline font-medium"
@@ -370,24 +409,29 @@ export default function Dashboard() {
             </thead>
             <tbody className="divide-y divide-slate-50">
               {data.recent_forms.map((form) => (
-                <tr key={form.id} className="hover:bg-slate-50/50 transition-colors">
+                <tr
+                  key={form.id}
+                  onClick={() => navigate(`/admin/surveys/${form.id}/builder`)}
+                  className="hover:bg-blue-50/40 transition-colors cursor-pointer group"
+                >
                   <td className="px-5 py-3">
-                    <p className="font-medium text-slate-800 truncate max-w-[200px]">{form.title}</p>
+                    <p className="font-medium text-slate-800 truncate max-w-[200px] group-hover:text-blue-700 transition-colors">{form.title}</p>
                     <p className="text-[11px] text-slate-400 mt-0.5">/{form.slug}</p>
                   </td>
                   <td className="px-5 py-3">
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold ${
                         form.is_active
                           ? 'bg-emerald-50 text-emerald-700'
                           : 'bg-slate-100 text-slate-500'
                       }`}
                     >
+                      <span className={`w-1.5 h-1.5 rounded-full ${form.is_active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
                       {form.is_active ? 'Active' : 'Inactive'}
                     </span>
                   </td>
                   <td className="px-5 py-3 text-right text-slate-600">{form.field_count}</td>
-                  <td className="px-5 py-3 text-right font-medium text-slate-700">{form.submission_count}</td>
+                  <td className="px-5 py-3 text-right font-semibold text-slate-700">{form.submission_count}</td>
                   <td className="px-5 py-3 text-right text-slate-400 text-xs">
                     {new Date(form.created_at).toLocaleDateString('en-US', {
                       day: '2-digit',
@@ -395,19 +439,21 @@ export default function Dashboard() {
                       year: 'numeric',
                     })}
                   </td>
-                  <td className="px-5 py-3 text-right">
-                    <Link
-                      to={`/admin/surveys/${form.id}/builder`}
-                      className="text-xs text-blue-600 hover:underline mr-3"
-                    >
-                      Edit
-                    </Link>
-                    <Link
-                      to={`/admin/surveys/${form.id}/submissions`}
-                      className="text-xs text-slate-500 hover:underline"
-                    >
-                      Responses
-                    </Link>
+                  <td className="px-5 py-3 text-right" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-end gap-2">
+                      <Link
+                        to={`/admin/surveys/${form.id}/builder`}
+                        className="text-xs font-semibold text-blue-600 hover:text-blue-800 transition-colors px-2 py-1 rounded-lg hover:bg-blue-50"
+                      >
+                        Edit
+                      </Link>
+                      <Link
+                        to={`/admin/surveys/${form.id}/submissions`}
+                        className="text-xs font-semibold text-slate-500 hover:text-slate-700 transition-colors px-2 py-1 rounded-lg hover:bg-slate-50"
+                      >
+                        Responses
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}

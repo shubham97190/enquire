@@ -538,27 +538,44 @@ export default function FormBuilder() {
       {/* ── Header ─────────────────────────────────────── */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <Link to="/admin/surveys" className="text-sm text-blue-600 hover:underline">
-            &larr; All Surveys
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-900 mt-1">{form.title}</h1>
+          <div className="flex items-center gap-2 mb-1">
+            <Link to="/admin/surveys" className="text-sm text-blue-600 hover:text-blue-800 transition-colors flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+              </svg>
+              All Surveys
+            </Link>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl font-bold text-gray-900">{form.title}</h1>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[11px] font-semibold">
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931z" />
+              </svg>
+              Edit Mode
+            </span>
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${form.is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${form.is_active ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+              {form.is_active ? 'Live' : 'Inactive'}
+            </span>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Link
             to={`/admin/surveys/${id}/submissions`}
-            className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+            className="px-3 py-2 text-sm font-medium border border-gray-200 rounded-xl hover:bg-gray-50 transition text-gray-600"
           >
             Submissions ({form.submission_count})
           </Link>
           <Link
             to={`/admin/surveys/${id}/report`}
-            className="px-3 py-2 text-sm border border-gray-200 rounded-lg hover:bg-gray-50 transition"
+            className="px-3 py-2 text-sm font-medium border border-gray-200 rounded-xl hover:bg-gray-50 transition text-gray-600"
           >
             Report
           </Link>
           <button
             onClick={() => setConfirmDeleteForm(true)}
-            className="px-3 py-2 text-sm text-red-600 border border-red-200 rounded-lg hover:bg-red-50 transition"
+            className="px-3 py-2 text-sm font-medium text-red-600 border border-red-200 rounded-xl hover:bg-red-50 transition"
           >
             Delete
           </button>

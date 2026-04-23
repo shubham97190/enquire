@@ -68,7 +68,6 @@ function AnswerDisplay({ type, value, json }: { type: string; value: string; jso
   }
 }
 
-// ─── Submission Detail Modal ──────────────────────────
 function SubmissionModal({
   formId,
   subId,
@@ -90,73 +89,116 @@ function SubmissionModal({
   }, [formId, subId]);
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
-          <h3 className="font-semibold text-gray-900">Submission Details</h3>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl">
-            &times;
+    <div className="fixed inset-0 z-50 flex justify-end">
+      {/* Backdrop */}
+      <div 
+        className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm transition-opacity animate-fade-in" 
+        onClick={onClose}
+      />
+      
+      {/* Drawer */}
+      <div className="relative w-full max-w-lg bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
+        {/* Header */}
+        <div className="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-white/80 backdrop-blur-md z-10 sticky top-0">
+          <div>
+            <h3 className="font-bold text-gray-900 text-lg">Submission Details</h3>
+            <p className="text-xs text-gray-500 mt-0.5">Response ID: {subId.slice(0,8)}</p>
+          </div>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center h-32">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        ) : !detail ? (
-          <div className="p-6 text-gray-500">Not found</div>
-        ) : (
-          <div className="p-6 space-y-6">
-            {/* Answers */}
-            <div>
-              <h4 className="text-sm font-semibold text-gray-700 mb-3">Answers</h4>
-              <div className="space-y-2">
-                {detail.answers.map((a) => (
-                  <div key={a.id} className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-xs font-medium text-gray-500">{a.question_label_snapshot}</p>
-                    <div className="mt-0.5">
-                      <AnswerDisplay type={a.question_type_snapshot} value={a.answer_value} json={a.answer_json} />
-                    </div>
+        <div className="flex-1 overflow-y-auto p-6 bg-slate-50">
+          {loading ? (
+            <div className="flex items-center justify-center h-48 space-y-4 flex-col">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+              <p className="text-sm text-gray-500 font-medium">Loading details...</p>
+            </div>
+          ) : !detail ? (
+            <div className="p-8 text-center text-gray-500 bg-white rounded-2xl border border-gray-100 shadow-sm mt-8">
+              Not found
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {/* User Overview Card */}
+              <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-5 shadow-lg text-white relative overflow-hidden">
+                {/* Decorative background circle */}
+                <div className="absolute top-0 right-0 -mr-8 -mt-8 w-32 h-32 rounded-full bg-white/10 blur-2xl"></div>
+                
+                <div className="relative z-10 flex items-center gap-4 mb-5">
+                  <div className="w-14 h-14 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-inner border border-white/20 text-white font-bold text-xl">
+                    {detail.ip_address?.[0]?.toUpperCase() || '?'}
                   </div>
-                ))}
-                {detail.answers.length === 0 && (
-                  <p className="text-sm text-gray-400">No answers recorded</p>
-                )}
-              </div>
-            </div>
-
-            {/* Device & Location */}
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div>
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">Device Info</h4>
-                <div className="space-y-1 text-gray-600">
-                  <p>Type: <strong>{detail.device_type}</strong></p>
-                  <p>Browser: <strong>{detail.browser_name}</strong></p>
-                  <p>OS: <strong>{detail.os_name}</strong></p>
-                  <p>Brand: <strong>{detail.device_brand || '—'}</strong></p>
-                  <p>Mobile: {detail.is_mobile ? '✓' : '✗'} | Tablet: {detail.is_tablet ? '✓' : '✗'} | Desktop: {detail.is_desktop ? '✓' : '✗'}</p>
+                  <div>
+                    <h4 className="font-bold text-lg">{detail.ip_address || 'Anonymous Respondent'}</h4>
+                    <p className="text-blue-100 text-sm flex items-center gap-1.5 mt-0.5">
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                      </svg>
+                      {[detail.city, detail.country].filter(Boolean).join(', ') || 'Unknown Location'}
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="relative z-10 grid grid-cols-2 gap-3 mt-4 pt-4 border-t border-white/20 text-sm">
+                  <div>
+                    <span className="block text-blue-200 text-xs mb-1 font-medium">Device & OS</span>
+                    <span className="font-semibold block">{detail.device_type} · {detail.os_name}</span>
+                  </div>
+                  <div>
+                    <span className="block text-blue-200 text-xs mb-1 font-medium">Browser</span>
+                    <span className="font-semibold block">{detail.browser_name}</span>
+                  </div>
                 </div>
               </div>
-              <div>
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">Location</h4>
-                <div className="space-y-1 text-gray-600">
-                  <p>IP: <strong>{detail.ip_address || '—'}</strong></p>
-                  <p>City: <strong>{detail.city || '—'}</strong></p>
-                  <p>Region: <strong>{detail.region || '—'}</strong></p>
-                  <p>Country: <strong>{detail.country || '—'}</strong></p>
-                  <p>Timezone: <strong>{detail.timezone || '—'}</strong></p>
-                  <p>ISP: <strong>{detail.org || '—'}</strong></p>
+
+              {/* Answers */}
+              <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-1">
+                <div className="p-4 border-b border-gray-50 flex items-center justify-between">
+                  <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Responses</h4>
+                  <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full">{detail.answers.length} answers</span>
+                </div>
+                <div className="p-2 space-y-1">
+                  {detail.answers.map((a, i) => (
+                    <div key={a.id} className="group hover:bg-slate-50 rounded-xl p-4 transition-colors">
+                      <div className="flex items-start gap-3">
+                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs font-bold mt-0.5">
+                          {i + 1}
+                        </span>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-gray-800 mb-2">{a.question_label_snapshot}</p>
+                          <div className="text-gray-900">
+                            <AnswerDisplay type={a.question_type_snapshot} value={a.answer_value} json={a.answer_json} />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {detail.answers.length === 0 && (
+                    <p className="text-sm text-gray-400 p-4 text-center">No answers recorded for this submission.</p>
+                  )}
                 </div>
               </div>
-            </div>
 
-            {/* Metadata */}
-            <div className="text-xs text-gray-400">
-              <p>Submitted: {new Date(detail.submitted_at).toLocaleString('en-IN')}</p>
-              <p>User Agent: {detail.user_agent || '—'}</p>
+              {/* Metadata */}
+              <div className="flex items-center justify-between text-xs text-gray-400 px-2 pb-4 pt-2">
+                <span className="flex items-center gap-1">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {new Date(detail.submitted_at).toLocaleString('en-IN', {
+                    dateStyle: 'medium',
+                    timeStyle: 'short'
+                  })}
+                </span>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -242,53 +284,66 @@ export default function FormSubmissions() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="bg-gray-50 border-b border-gray-100">
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Date</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">IP</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Location</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Device</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Browser</th>
-                  <th className="text-left px-4 py-3 font-medium text-gray-600">Status</th>
-                  <th className="text-center px-4 py-3 font-medium text-gray-600">Action</th>
+                <tr className="bg-slate-50 border-b border-gray-100 uppercase tracking-wider text-xs">
+                  <th className="text-left px-5 py-4 font-semibold text-slate-500 rounded-tl-xl">Date & Time</th>
+                  <th className="text-left px-5 py-4 font-semibold text-slate-500">Submitter Info</th>
+                  <th className="text-left px-5 py-4 font-semibold text-slate-500">Device Insights</th>
+                  <th className="text-left px-5 py-4 font-semibold text-slate-500">Status</th>
+                  <th className="text-center px-5 py-4 font-semibold text-slate-500 rounded-tr-xl">Action</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-50">
                 {data.results.map((sub) => (
                   <tr
                     key={sub.id}
-                    className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer transition"
+                    className="hover:bg-blue-50/50 cursor-pointer transition-all duration-200 group"
                     onClick={() => setSelectedSub(sub.id)}
                   >
-                    <td className="px-4 py-3 text-gray-600 text-xs">
-                      {new Date(sub.submitted_at).toLocaleString('en-IN')}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 font-mono text-xs">
-                      {sub.ip_address || '—'}
-                    </td>
-                    <td className="px-4 py-3 text-gray-600 text-xs">
-                      {[sub.city, sub.country].filter(Boolean).join(', ') || '—'}
-                    </td>
-                    <td className="px-4 py-3 text-xs">
-                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
-                        sub.is_mobile ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {sub.device_type || 'Unknown'}
+                    <td className="px-5 py-4 text-gray-600 text-sm whitespace-nowrap">
+                      <span className="font-medium text-slate-800 block">
+                        {new Date(sub.submitted_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </span>
+                      <span className="text-xs text-slate-400">
+                        {new Date(sub.submitted_at).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-600 text-xs">{sub.browser_name || '—'}</td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium ${
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xs">
+                          {sub.ip_address?.[0]?.toUpperCase() || '?'}
+                        </div>
+                        <div>
+                          <p className="font-mono text-xs text-slate-700">{sub.ip_address || 'Unknown IP'}</p>
+                          <p className="text-xs text-slate-500">{[sub.city, sub.country].filter(Boolean).join(', ') || 'Unknown Location'}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-1.5 flex-wrap max-w-[200px]">
+                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border ${
+                          sub.is_mobile ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-slate-50 text-slate-600 border-slate-200'
+                        }`}>
+                          {sub.device_type || 'Unknown'}
+                        </span>
+                        <span className="text-xs text-slate-500 truncate max-w-[100px]">{sub.browser_name || '—'}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-4">
+                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                         sub.status === 'reviewed'
-                          ? 'bg-green-100 text-green-700'
+                          ? 'bg-emerald-100 text-emerald-700'
                           : sub.status === 'archived'
-                          ? 'bg-gray-100 text-gray-500'
-                          : 'bg-blue-100 text-blue-700'
+                          ? 'bg-slate-100 text-slate-600'
+                          : 'bg-amber-100 text-amber-700'
                       }`}>
-                        {sub.status}
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          sub.status === 'reviewed' ? 'bg-emerald-500' : sub.status === 'archived' ? 'bg-slate-400' : 'bg-amber-500'
+                        }`} />
+                        <span className="capitalize">{sub.status}</span>
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center">
-                      <button className="text-xs text-blue-600 hover:underline">
+                    <td className="px-5 py-4 text-center">
+                      <button className="text-sm font-semibold text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-50 px-3 py-1.5 rounded-lg hover:bg-blue-100">
                         View
                       </button>
                     </td>

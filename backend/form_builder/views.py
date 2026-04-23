@@ -44,27 +44,40 @@ NON_INPUT_TYPES = {FieldType.SECTION_HEADING, FieldType.DESCRIPTION_BLOCK}
 # ──────────────────────────────────────────────
 
 class AdminFormsDashboardView(APIView):
-    """Admin: Summary stats and trends for the forms dashboard."""
+    """Admin: Summary stats and trends for the forms dashboard.
+    SUPER_ADMIN sees all data; STAFF sees only data for their own forms.
+    """
     permission_classes = [IsAdminUser]
 
     def get(self, request):
+        user = request.user
+        is_super_admin = user.is_super_admin
+
         now = timezone.now()
         today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
         month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         thirty_days_ago = now - timezone.timedelta(days=30)
         twelve_months_ago = now - timezone.timedelta(days=365)
 
-        total_forms = EnquiryForm.objects.count()
-        active_forms = EnquiryForm.objects.filter(is_active=True).count()
+        # Scope querysets to user's own forms for STAFF
+        forms_qs = EnquiryForm.objects.all() if is_super_admin else EnquiryForm.objects.filter(created_by=user)
+        submissions_qs = (
+            EnquirySubmission.objects.all()
+            if is_super_admin
+            else EnquirySubmission.objects.filter(form__created_by=user)
+        )
+
+        total_forms = forms_qs.count()
+        active_forms = forms_qs.filter(is_active=True).count()
         inactive_forms = total_forms - active_forms
 
-        total_submissions = EnquirySubmission.objects.count()
-        today_submissions = EnquirySubmission.objects.filter(submitted_at__gte=today_start).count()
-        monthly_submissions = EnquirySubmission.objects.filter(submitted_at__gte=month_start).count()
+        total_submissions = submissions_qs.count()
+        today_submissions = submissions_qs.filter(submitted_at__gte=today_start).count()
+        monthly_submissions = submissions_qs.filter(submitted_at__gte=month_start).count()
 
         # Daily trend (last 30 days)
         daily_trend = list(
-            EnquirySubmission.objects
+            submissions_qs
             .filter(submitted_at__gte=thirty_days_ago)
             .annotate(date=TruncDate('submitted_at'))
             .values('date')
@@ -76,7 +89,7 @@ class AdminFormsDashboardView(APIView):
 
         # Monthly trend (last 12 months)
         monthly_trend = list(
-            EnquirySubmission.objects
+            submissions_qs
             .filter(submitted_at__gte=twelve_months_ago)
             .annotate(month=TruncMonth('submitted_at'))
             .values('month')
@@ -88,7 +101,7 @@ class AdminFormsDashboardView(APIView):
 
         # Top surveys by submission count
         top_forms_qs = (
-            EnquiryForm.objects
+            forms_qs
             .annotate(submission_count=Count('submissions'))
             .order_by('-submission_count')[:6]
             .values('id', 'title', 'submission_count')
@@ -104,7 +117,7 @@ class AdminFormsDashboardView(APIView):
 
         # Recent surveys (latest 8 created)
         recent_forms_qs = (
-            EnquiryForm.objects
+            forms_qs
             .annotate(
                 field_count=Count('fields', filter=Q(fields__is_active=True)),
                 submission_count=Count('submissions'),
@@ -126,7 +139,7 @@ class AdminFormsDashboardView(APIView):
 
         # Device breakdown
         device_breakdown = list(
-            EnquirySubmission.objects
+            submissions_qs
             .exclude(device_type='')
             .values('device_type')
             .annotate(count=Count('id'))
@@ -307,10 +320,20 @@ class AdminFormListCreateView(generics.ListCreateAPIView):
 
 
 class AdminFormDetailView(generics.RetrieveUpdateDestroyAPIView):
-    """Admin: Get / Update / Delete a form."""
+    """Admin: Get / Update / Delete a form.
+    SUPER_ADMIN can access any form; STAFF can only access forms they created.
+    """
     permission_classes = [IsAdminUser]
     queryset = EnquiryForm.objects.prefetch_related('fields')
     lookup_field = 'pk'
+
+    def get_object(self):
+        obj = super().get_object()
+        user = self.request.user
+        if not user.is_super_admin and obj.created_by != user:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('You do not have permission to access this form.')
+        return obj
 
     def get_serializer_class(self):
         if self.request.method in ('PUT', 'PATCH'):
@@ -344,6 +367,9 @@ class AdminFormDuplicateView(APIView):
             original = EnquiryForm.objects.prefetch_related('fields').get(pk=pk)
         except EnquiryForm.DoesNotExist:
             return Response({'detail': 'Form not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not request.user.is_super_admin and original.created_by != request.user:
+            return Response({'detail': 'You do not have permission to duplicate this form.'}, status=status.HTTP_403_FORBIDDEN)
 
         new_title = get_duplicate_title(original.title)
         new_slug = get_unique_slug(new_title)
@@ -394,18 +420,24 @@ class AdminFormFieldCreateView(generics.CreateAPIView):
     permission_classes = [IsAdminUser]
     serializer_class = EnquiryFormFieldCreateSerializer
 
-    def perform_create(self, serializer):
+    def _get_form_or_error(self, pk, user):
         try:
-            form = EnquiryForm.objects.get(pk=self.kwargs['pk'])
+            form = EnquiryForm.objects.get(pk=pk)
         except EnquiryForm.DoesNotExist:
-            return
-        serializer.save(form=form)
+            return None, Response({'detail': 'Form not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if not user.is_super_admin and form.created_by != user:
+            return None, Response({'detail': 'You do not have permission to modify this form.'}, status=status.HTTP_403_FORBIDDEN)
+        return form, None
+
+    def perform_create(self, serializer):
+        form, _ = self._get_form_or_error(self.kwargs['pk'], self.request.user)
+        if form:
+            serializer.save(form=form)
 
     def create(self, request, *args, **kwargs):
-        try:
-            form = EnquiryForm.objects.get(pk=self.kwargs['pk'])
-        except EnquiryForm.DoesNotExist:
-            return Response({'detail': 'Form not found.'}, status=status.HTTP_404_NOT_FOUND)
+        form, err = self._get_form_or_error(self.kwargs['pk'], request.user)
+        if err:
+            return err
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -420,9 +452,17 @@ class AdminFormFieldDetailView(generics.RetrieveUpdateDestroyAPIView):
     """Admin: Get / Update / Delete a single field."""
     permission_classes = [IsAdminUser]
     serializer_class = EnquiryFormFieldSerializer
-    queryset = EnquiryFormField.objects.all()
+    queryset = EnquiryFormField.objects.select_related('form')
     lookup_field = 'pk'
     lookup_url_kwarg = 'field_pk'
+
+    def get_object(self):
+        obj = super().get_object()
+        user = self.request.user
+        if not user.is_super_admin and obj.form.created_by != user:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied('You do not have permission to modify this field.')
+        return obj
 
 
 class AdminFormFieldsBulkView(APIView):
@@ -434,6 +474,9 @@ class AdminFormFieldsBulkView(APIView):
             form = EnquiryForm.objects.get(pk=pk)
         except EnquiryForm.DoesNotExist:
             return Response({'detail': 'Form not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        if not request.user.is_super_admin and form.created_by != request.user:
+            return Response({'detail': 'You do not have permission to modify this form.'}, status=status.HTTP_403_FORBIDDEN)
 
         fields_data = request.data.get('fields', [])
         if not isinstance(fields_data, list):
@@ -466,12 +509,18 @@ class AdminFormFieldsBulkView(APIView):
 # ──────────────────────────────────────────────
 
 class AdminFormSubmissionsView(generics.ListAPIView):
-    """Admin: List submissions for a specific form."""
+    """Admin: List submissions for a specific form.
+    STAFF can only view submissions for forms they created.
+    """
     permission_classes = [IsAdminUser]
     serializer_class = SubmissionListSerializer
 
     def get_queryset(self):
-        return EnquirySubmission.objects.filter(form_id=self.kwargs['pk']).order_by('-submitted_at')
+        user = self.request.user
+        base = EnquirySubmission.objects.filter(form_id=self.kwargs['pk'])
+        if not user.is_super_admin:
+            base = base.filter(form__created_by=user)
+        return base.order_by('-submitted_at')
 
 
 class AdminFormSubmissionDetailView(generics.RetrieveAPIView):

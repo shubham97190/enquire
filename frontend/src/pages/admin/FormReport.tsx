@@ -13,19 +13,25 @@ import {
 const COLORS = ['#2563eb', '#7c3aed', '#db2777', '#ea580c', '#16a34a', '#0891b2', '#d97706', '#6366f1'];
 
 function KpiCard({ label, value, sub, color = 'blue' }: { label: string; value: string | number; sub?: string; color?: string }) {
-  const ring: Record<string, string> = {
-    blue: 'bg-blue-50 text-blue-600',
-    violet: 'bg-violet-50 text-violet-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
-    amber: 'bg-amber-50 text-amber-600',
+  const styles: Record<string, string> = {
+    blue: 'text-blue-600 bg-blue-50 border-blue-100',
+    violet: 'text-violet-600 bg-violet-50 border-violet-100',
+    emerald: 'text-emerald-600 bg-emerald-50 border-emerald-100',
+    amber: 'text-amber-600 bg-amber-50 border-amber-100',
   };
+  const currentStyle = styles[color] || styles.blue;
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-1">
-      <span className={`text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded-md self-start ${ring[color] || ring.blue}`}>
-        {label}
-      </span>
-      <p className="text-3xl font-extrabold text-gray-900 mt-1 tracking-tight">{value}</p>
-      {sub && <p className="text-xs text-gray-400">{sub}</p>}
+    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 p-6 flex flex-col gap-2 relative overflow-hidden group">
+      {/* Decorative Blob */}
+      <div className={`absolute -right-8 -top-8 w-32 h-32 rounded-full opacity-20 blur-2xl transition-transform duration-500 group-hover:scale-150 ${currentStyle.split(' ')[0].replace('text-', 'bg-')}`}></div>
+      
+      <div className="relative z-10 flex flex-col gap-1">
+        <span className={`text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-lg self-start border ${currentStyle}`}>
+          {label}
+        </span>
+        <p className="text-4xl font-black text-slate-900 mt-2 tracking-tight">{value}</p>
+        {sub && <p className="text-sm font-medium text-slate-500 mt-1">{sub}</p>}
+      </div>
     </div>
   );
 }
