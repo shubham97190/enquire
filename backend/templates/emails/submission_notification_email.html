@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>New Form Submission</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f1f5f9;
+      color: #1e293b;
+    }
+    .wrapper { max-width: 620px; margin: 40px auto; padding: 0 16px 40px; }
+
+    /* Header banner */
+    .header {
+      background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+      border-radius: 16px 16px 0 0;
+      padding: 36px 40px 32px;
+      text-align: center;
+      color: #fff;
+    }
+    .header .icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 56px;
+      height: 56px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 14px;
+      margin-bottom: 16px;
+    }
+    .header h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      margin-bottom: 6px;
+    }
+    .header p {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+
+    /* Card body */
+    .card {
+      background: #fff;
+      border-radius: 0 0 16px 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      padding: 32px 40px 36px;
+    }
+
+    .greeting {
+      font-size: 15px;
+      color: #475569;
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+    .greeting strong { color: #1e293b; }
+
+    /* Alert strip */
+    .alert-strip {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: 10px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .alert-strip .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #2563eb;
+      flex-shrink: 0;
+    }
+    .alert-strip p {
+      font-size: 14px;
+      color: #1d4ed8;
+      font-weight: 600;
+    }
+
+    /* Section heading */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: #94a3b8;
+      margin-bottom: 12px;
+    }
+
+    /* Meta table */
+    .meta-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 28px;
+    }
+    .meta-table tr td {
+      padding: 10px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 14px;
+    }
+    .meta-table tr:last-child td { border-bottom: none; }
+    .meta-table .key {
+      color: #64748b;
+      width: 38%;
+      font-weight: 500;
+    }
+    .meta-table .val {
+      color: #1e293b;
+      font-weight: 600;
+    }
+    .badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .badge-green { background: #dcfce7; color: #15803d; }
+    .badge-slate { background: #f1f5f9; color: #475569; }
+
+    /* Divider */
+    .divider {
+      height: 1px;
+      background: #f1f5f9;
+      margin: 24px 0;
+    }
+
+    /* Answers table */
+    .answers-heading {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 16px;
+    }
+    .answer-row {
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .answer-row .q {
+      font-size: 12px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    .answer-row .a {
+      font-size: 14px;
+      color: #1e293b;
+      font-weight: 500;
+      word-break: break-word;
+    }
+    .answer-row .a.empty {
+      color: #94a3b8;
+      font-style: italic;
+    }
+
+    /* CTA button */
+    .cta-wrap { text-align: center; margin: 32px 0 8px; }
+    .cta-btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+      color: #fff !important;
+      text-decoration: none;
+      padding: 14px 36px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.8;
+    }
+    .footer a { color: #2563eb; text-decoration: none; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="icon">
+      <!-- submission icon -->
+      <svg width="28" height="28" fill="none" viewBox="0 0 24 24" stroke="white" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+      </svg>
+    </div>
+    <h1>New Submission Received</h1>
+    <p>Someone just completed your survey</p>
+  </div>
+
+  <!-- Card body -->
+  <div class="card">
+
+    <p class="greeting">
+      Hi <strong>{{ owner_name }}</strong>,<br />
+      A new response has been submitted to your form <strong>{{ form_title }}</strong>.
+      Here's a summary below.
+    </p>
+
+    <!-- Alert strip -->
+    <div class="alert-strip">
+      <div class="dot"></div>
+      <p>{{ total_submissions }} total submission{{ total_submissions|pluralize }} on this form</p>
+    </div>
+
+    <!-- Submission meta -->
+    <p class="section-label">Submission Details</p>
+    <table class="meta-table">
+      <tr>
+        <td class="key">Received at</td>
+        <td class="val">{{ submitted_at }}</td>
+      </tr>
+      <tr>
+        <td class="key">IP Address</td>
+        <td class="val">{{ ip_address|default:"—" }}</td>
+      </tr>
+      <tr>
+        <td class="key">Location</td>
+        <td class="val">{{ location|default:"Unknown" }}</td>
+      </tr>
+      <tr>
+        <td class="key">Device</td>
+        <td class="val">{{ device_type|default:"—" }} &middot; {{ browser_name|default:"—" }}</td>
+      </tr>
+      <tr>
+        <td class="key">Status</td>
+        <td class="val">
+          <span class="badge badge-green">New</span>
+        </td>
+      </tr>
+    </table>
+
+    <div class="divider"></div>
+
+    <!-- Answers -->
+    {% if answers %}
+    <p class="answers-heading">Responses ({{ answers|length }})</p>
+    {% for answer in answers %}
+    <div class="answer-row">
+      <div class="q">{{ forloop.counter }}. {{ answer.label }}</div>
+      <div class="a {% if not answer.value %}empty{% endif %}">
+        {{ answer.value|default:"(not answered)" }}
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    <!-- CTA -->
+    <div class="cta-wrap">
+      <a href="{{ admin_url }}" class="cta-btn">View Full Submission →</a>
+    </div>
+
+    <div class="divider"></div>
+
+    <p style="font-size:12px;color:#94a3b8;text-align:center;">
+      You are receiving this because email notifications are enabled for <strong>{{ form_title }}</strong>.<br>
+      To turn off notifications, edit the form settings in your dashboard.
+    </p>
+
+  </div><!-- /card -->
+
+  <!-- Footer -->
+  <div class="footer">
+    <p>Powered by <strong>Enquire</strong></p>
+    <p>This is an automated notification. Please do not reply to this email.</p>
+  </div>
+
+</div>
+</body>
+</html>

@@ -274,6 +274,12 @@ class PublicFormSubmitView(APIView):
             'is_redirect': form.is_redirect,
             'redirect_url': form.redirect_url if form.is_redirect else '',
         }
+
+        # Fire background email notification if enabled
+        if form.email_notifications:
+            from .tasks import send_submission_notification
+            send_submission_notification.delay(str(submission.id))
+
         return Response(resp, status=status.HTTP_201_CREATED)
 
 

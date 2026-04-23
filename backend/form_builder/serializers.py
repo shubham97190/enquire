@@ -62,7 +62,7 @@ class EnquiryFormListSerializer(serializers.ModelSerializer):
         model = EnquiryForm
         fields = [
             'id', 'title', 'slug', 'is_active', 'is_redirect', 'redirect_url',
-            'field_count', 'submission_count', 'created_at', 'updated_at',
+            'email_notifications', 'field_count', 'submission_count', 'created_at', 'updated_at',
         ]
 
 
@@ -75,7 +75,7 @@ class EnquiryFormDetailSerializer(serializers.ModelSerializer):
         model = EnquiryForm
         fields = [
             'id', 'title', 'slug', 'description', 'unicode_text',
-            'is_active', 'is_redirect', 'redirect_url',
+            'is_active', 'is_redirect', 'redirect_url', 'email_notifications',
             'qr_code_url', 'fields', 'submission_count',
             'created_by', 'created_at', 'updated_at',
         ]
@@ -98,7 +98,7 @@ class EnquiryFormCreateUpdateSerializer(serializers.ModelSerializer):
         model = EnquiryForm
         fields = [
             'id', 'title', 'description', 'unicode_text',
-            'is_active', 'is_redirect', 'redirect_url',
+            'is_active', 'is_redirect', 'redirect_url', 'email_notifications',
         ]
         read_only_fields = ['id']
 

@@ -41,6 +41,10 @@ class EnquiryForm(models.Model):
     qr_code = models.ImageField(upload_to='form_builder/qrcodes/', blank=True)
     is_redirect = models.BooleanField(default=False)
     redirect_url = models.URLField(max_length=500, blank=True, default='')
+    email_notifications = models.BooleanField(
+        default=True,
+        help_text='Send email notification to form owner on each new submission.',
+    )
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

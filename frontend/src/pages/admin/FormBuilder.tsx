@@ -281,6 +281,7 @@ export default function FormBuilder() {
   const [isActive, setIsActive] = useState(true);
   const [isRedirect, setIsRedirect] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState('');
+  const [emailNotifications, setEmailNotifications] = useState(true);
   const [settingsDirty, setSettingsDirty] = useState(false);
 
   // Field editor
@@ -312,6 +313,7 @@ export default function FormBuilder() {
       setIsActive(data.is_active);
       setIsRedirect(data.is_redirect);
       setRedirectUrl(data.redirect_url);
+      setEmailNotifications(data.email_notifications ?? true);
       setSettingsDirty(false);
     } catch {
       toast.error('Failed to load form');
@@ -333,7 +335,8 @@ export default function FormBuilder() {
       unicodeText !== form.unicode_text ||
       isActive !== form.is_active ||
       isRedirect !== form.is_redirect ||
-      redirectUrl !== form.redirect_url;
+      redirectUrl !== form.redirect_url ||
+      emailNotifications !== (form.email_notifications ?? true);
     setSettingsDirty(changed);
   }, [title, description, unicodeText, isActive, isRedirect, redirectUrl, form]);
 
@@ -348,6 +351,7 @@ export default function FormBuilder() {
         is_active: isActive,
         is_redirect: isRedirect,
         redirect_url: redirectUrl,
+        email_notifications: emailNotifications,
       });
       setForm(updated);
       setSettingsDirty(false);
@@ -643,6 +647,33 @@ export default function FormBuilder() {
                   />
                   <span className="text-gray-700">Redirect</span>
                 </label>
+              </div>
+
+              {/* Email Notifications Toggle */}
+              <div className={`flex items-start gap-3 p-3 rounded-lg border transition-colors ${
+                emailNotifications ? 'bg-blue-50 border-blue-200' : 'bg-gray-50 border-gray-200'
+              }`}>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={emailNotifications}
+                  onClick={() => setEmailNotifications(!emailNotifications)}
+                  className={`relative flex-shrink-0 w-9 h-5 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 ${
+                    emailNotifications ? 'bg-blue-600' : 'bg-gray-300'
+                  }`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${
+                    emailNotifications ? 'translate-x-4' : 'translate-x-0'
+                  }`} />
+                </button>
+                <div>
+                  <p className="text-[12px] font-semibold text-gray-800">Email Notifications</p>
+                  <p className="text-[11px] text-gray-500 mt-0.5 leading-snug">
+                    {emailNotifications
+                      ? 'You will receive an email for each new submission.'
+                      : 'Email notifications are disabled for this form.'}
+                  </p>
+                </div>
               </div>
               {isRedirect && (
                 <div>

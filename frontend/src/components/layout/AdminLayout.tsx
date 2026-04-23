@@ -83,13 +83,7 @@ export default function AdminLayout() {
               <p className="text-xs font-semibold text-slate-700 truncate">
                 {user?.first_name ? `${user.first_name} ${user.last_name || ''}`.trim() : user?.username}
               </p>
-              <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold mt-0.5 ${
-                isSuperAdmin
-                  ? 'bg-violet-100 text-violet-700'
-                  : 'bg-blue-100 text-blue-700'
-              }`}>
-                {isSuperAdmin ? 'Super Admin' : 'Staff'}
-              </span>
+              <p className="text-[10px] text-slate-400 truncate mt-0.5">{user?.email}</p>
             </div>
           </div>
         )}

@@ -105,6 +105,7 @@ export interface FormBuilderForm {
   is_active: boolean;
   is_redirect: boolean;
   redirect_url: string;
+  email_notifications: boolean;
   qr_code_url: string | null;
   fields: FormBuilderField[];
   submission_count: number;

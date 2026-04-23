@@ -72,6 +72,8 @@ function TrendChart({
   xKey,
   xFormatter,
   tooltipFormatter,
+  color = '#3b82f6',
+  gradientId = 'areaGrad',
 }: {
   data: { [key: string]: unknown }[];
   title: string;
@@ -79,6 +81,8 @@ function TrendChart({
   xKey: string;
   xFormatter?: (v: string) => string;
   tooltipFormatter?: (v: string) => string;
+  color?: string;
+  gradientId?: string;
 }) {
   const [chartType, setChartType] = useState<ChartType>('area');
 
@@ -114,7 +118,7 @@ function TrendChart({
       return (
         <BarChart {...common}>
           {axis}
-          <Bar dataKey={dataKey} fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={32} />
+          <Bar dataKey={dataKey} fill={color} radius={[4, 4, 0, 0]} maxBarSize={32} />
         </BarChart>
       );
     }
@@ -125,9 +129,9 @@ function TrendChart({
           <Line
             type="monotone"
             dataKey={dataKey}
-            stroke="#3b82f6"
+            stroke={color}
             strokeWidth={2}
-            dot={{ r: 3, fill: '#3b82f6' }}
+            dot={{ r: 3, fill: color }}
             activeDot={{ r: 5 }}
           />
         </LineChart>
@@ -137,20 +141,20 @@ function TrendChart({
     return (
       <AreaChart {...common}>
         <defs>
-          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.15} />
-            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+          <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor={color} stopOpacity={0.15} />
+            <stop offset="95%" stopColor={color} stopOpacity={0} />
           </linearGradient>
         </defs>
         {axis}
         <Area
           type="monotone"
           dataKey={dataKey}
-          stroke="#3b82f6"
+          stroke={color}
           strokeWidth={2}
-          fill="url(#areaGrad)"
+          fill={`url(#${gradientId})`}
           dot={false}
-          activeDot={{ r: 5, fill: '#3b82f6' }}
+          activeDot={{ r: 5, fill: color }}
         />
       </AreaChart>
     );
@@ -280,6 +284,8 @@ export default function Dashboard() {
           title="Daily Responses (Last 30 Days)"
           dataKey="count"
           xKey="date"
+          color="#10b981"
+          gradientId="dailyGrad"
           xFormatter={(v) =>
             new Date(v).toLocaleDateString('en-US', { day: '2-digit', month: 'short' })
           }
@@ -291,6 +297,8 @@ export default function Dashboard() {
           title="Monthly Responses (Last 12 Months)"
           dataKey="count"
           xKey="month"
+          color="#8b5cf6"
+          gradientId="monthlyGrad"
           xFormatter={(v) =>
             new Date(v).toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
           }
@@ -313,7 +321,7 @@ export default function Dashboard() {
             <ResponsiveContainer width="100%" height={220}>
               <BarChart
                 layout="vertical"
-                data={data.top_forms}
+                data={data.top_forms.slice(0, 6)}
                 margin={{ top: 0, right: 20, left: 0, bottom: 0 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
@@ -328,7 +336,11 @@ export default function Dashboard() {
                   tickFormatter={(v: string) => v.length > 16 ? v.slice(0, 16) + '…' : v}
                 />
                 <Tooltip contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontSize: 12 }} />
-                <Bar dataKey="submission_count" fill="#3b82f6" radius={[0, 4, 4, 0]} maxBarSize={20} name="Responses" />
+                <Bar dataKey="submission_count" radius={[0, 4, 4, 0]} maxBarSize={22} name="Responses">
+                  {data.top_forms.slice(0, 6).map((_, i) => (
+                    <Cell key={i} fill={['#3b82f6','#10b981','#8b5cf6','#f59e0b','#ef4444','#06b6d4'][i % 6]} />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           )}
