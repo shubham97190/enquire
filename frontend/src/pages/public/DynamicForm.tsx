@@ -684,6 +684,12 @@ export default function DynamicForm() {
     api
       .getPublicForm(slug)
       .then((data) => {
+        const nonInput = new Set(['section_heading', 'description_block', 'hidden']);
+        const hasInputFields = data.fields.some((f) => f.is_active && !nonInput.has(f.field_type));
+        if (data.is_redirect && data.redirect_url && !hasInputFields) {
+          window.location.href = data.redirect_url;
+          return;
+        }
         setForm(data);
         const defaults: Record<string, string> = {};
         data.fields.forEach((f) => {
