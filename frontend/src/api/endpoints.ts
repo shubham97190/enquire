@@ -83,6 +83,7 @@ export const createAdminForm = (data: {
   is_active?: boolean;
   is_redirect?: boolean;
   redirect_url?: string;
+  email_notifications?: boolean;
 }) =>
   api.post<FormBuilderForm>('/admin/forms/', data).then((r) => r.data);
 
@@ -93,6 +94,7 @@ export const updateAdminForm = (id: string, data: Partial<{
   is_active: boolean;
   is_redirect: boolean;
   redirect_url: string;
+  email_notifications: boolean;
 }>) =>
   api.patch<FormBuilderForm>(`/admin/forms/${id}/`, data).then((r) => r.data);
 
