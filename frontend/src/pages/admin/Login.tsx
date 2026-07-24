@@ -51,10 +51,11 @@ export default function Login() {
         <div className="w-full max-w-md animate-fade-in text-left">
           {/* Brand */}
           <div className="flex items-center gap-3 mb-10">
-            <div className="w-10 h-10 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/30">
-              <span className="text-white font-bold text-xl leading-none">S</span>
-            </div>
-            <span className="text-xl font-bold tracking-tight text-slate-900">SurveyPanel</span>
+            <img
+              src="https://stage.airpronetworks.com/app/uploads/2026/07/logo-1.png"
+              alt="AirPro"
+              className="h-10 w-auto"
+            />
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900 mb-2">Welcome back</h1>
