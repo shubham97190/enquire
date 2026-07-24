@@ -167,6 +167,7 @@ chrome-user-data
 /tmp
 /.worktrees
 .claude/*.local.*
+.superpowers/
 
 packages/react-devtools-core/dist
 packages/react-devtools-extensions/chrome/build
