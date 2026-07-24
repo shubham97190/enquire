@@ -15,7 +15,7 @@ class EnquiryFormAdmin(admin.ModelAdmin):
     list_display = ['title', 'slug', 'is_active', 'is_redirect', 'field_count', 'submission_count', 'created_at']
     list_filter = ['is_active', 'is_redirect', 'created_at']
     search_fields = ['title', 'slug']
-    readonly_fields = ['id', 'slug', 'qr_code', 'created_at', 'updated_at']
+    readonly_fields = ['id', 'slug', 'qr_code', 'logo', 'created_at', 'updated_at']
     inlines = [EnquiryFormFieldInline]
 
     @admin.display(description='Fields')
