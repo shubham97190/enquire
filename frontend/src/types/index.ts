@@ -105,8 +105,11 @@ export interface FormBuilderForm {
   is_active: boolean;
   is_redirect: boolean;
   redirect_url: string;
+  redirect_delay_seconds: number;
   email_notifications: boolean;
   qr_code_url: string | null;
+  logo_url: string | null;
+  footer_text: string;
   fields: FormBuilderField[];
   submission_count: number;
   created_by: number | null;
@@ -126,6 +129,8 @@ export interface FormBuilderListItem {
   created_at: string;
   updated_at: string;
 }
+
+export type SubmissionStatusValue = 'submitted' | 'reviewed' | 'archived';
 
 export interface FormSubmissionListItem {
   id: string;
