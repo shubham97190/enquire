@@ -919,9 +919,17 @@ export default function DynamicForm() {
         {/* ── Form Header ─────────────────────────────── */}
         <div className="text-center mb-8">
           {/* Brand mark */}
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-200 mb-4">
-            <span className="text-white font-black text-xl">E</span>
-          </div>
+          {form.logo_url ? (
+            <img
+              src={form.logo_url}
+              alt={form.title}
+              className="inline-block h-14 w-14 object-contain rounded-2xl shadow-lg shadow-blue-200 mb-4 bg-white"
+            />
+          ) : (
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg shadow-blue-200 mb-4">
+              <span className="text-white font-black text-xl">E</span>
+            </div>
+          )}
 
           {form.unicode_text && (
             <div className="mb-3">
@@ -963,7 +971,7 @@ export default function DynamicForm() {
                 return (
                   <div key={i} className="flex flex-col items-center gap-1">
                     <div
-                      className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                      className={`w-8 h-8 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all duration-300 ${
                         i < currentPage
                           ? 'bg-blue-600 text-white shadow-sm shadow-blue-200'
                           : i === currentPage
@@ -1021,7 +1029,7 @@ export default function DynamicForm() {
                   <button
                     type="button"
                     onClick={handleBack}
-                    className="flex items-center gap-2 px-5 py-3 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition"
+                    className="flex items-center gap-2 px-5 py-3.5 sm:py-3 min-h-[44px] text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
@@ -1034,7 +1042,7 @@ export default function DynamicForm() {
                   <button
                     type="button"
                     onClick={handleNext}
-                    className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-200 transition"
+                    className="flex items-center gap-2 px-6 py-3.5 sm:py-3 min-h-[44px] bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-200 transition"
                   >
                     Continue
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -1045,7 +1053,7 @@ export default function DynamicForm() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="flex items-center gap-2 px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-8 py-3.5 sm:py-3 min-h-[44px] bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-sm font-semibold rounded-xl hover:from-blue-700 hover:to-indigo-700 shadow-md shadow-blue-200 transition disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {submitting ? (
                       <>
@@ -1072,7 +1080,11 @@ export default function DynamicForm() {
 
         {/* ── Footer ─────────────────────────────────── */}
         <p className="text-center text-xs text-gray-400 mt-6">
-          Powered by <span className="font-semibold text-gray-500">Enquire</span>
+          {form.footer_text ? (
+            form.footer_text
+          ) : (
+            <>Powered by <span className="font-semibold text-gray-500">Enquire</span></>
+          )}
         </p>
       </div>
     </div>
