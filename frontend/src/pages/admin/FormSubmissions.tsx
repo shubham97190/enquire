@@ -408,9 +408,18 @@ export default function FormSubmissions() {
       {/* ── Table card ─────────────────────────────── */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         {loading ? (
-          <div className="flex flex-col items-center justify-center h-52 gap-3">
-            <div className="animate-spin rounded-full h-9 w-9 border-b-2 border-blue-600" />
-            <p className="text-sm text-gray-400">Loading submissions…</p>
+          <div className="divide-y divide-gray-50 animate-pulse">
+            {Array.from({ length: 6 }, (_, i) => (
+              <div key={i} className="px-5 py-4 flex items-center gap-4">
+                <div className="h-4 w-4 bg-gray-200 rounded flex-shrink-0" />
+                <div className="h-8 w-8 bg-gray-200 rounded-xl flex-shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-3 bg-gray-200 rounded w-1/3" />
+                  <div className="h-2.5 bg-gray-100 rounded w-1/4" />
+                </div>
+                <div className="h-5 w-16 bg-gray-200 rounded-full flex-shrink-0" />
+              </div>
+            ))}
           </div>
         ) : !data || data.results.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3 text-center px-6">
