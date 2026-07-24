@@ -33,6 +33,7 @@ from .utils import (
     get_duplicate_title,
 )
 from .export import generate_submissions_xlsx
+from .filters import SubmissionFilter
 
 logger = logging.getLogger(__name__)
 
@@ -576,13 +577,17 @@ class AdminFormFieldsBulkView(APIView):
 class AdminFormSubmissionsView(generics.ListAPIView):
     """Admin: List submissions for a specific form.
     STAFF can only view submissions for forms they created.
+    Supports ?search=, ?status=, ?submitted_after=, ?submitted_before=
+    (search/filter backends configured project-wide in settings.REST_FRAMEWORK).
     """
     permission_classes = [IsAdminUser]
     serializer_class = SubmissionListSerializer
+    filterset_class = SubmissionFilter
+    search_fields = ['city', 'country', 'answers__answer_value']
 
     def get_queryset(self):
         user = self.request.user
-        base = EnquirySubmission.objects.filter(form_id=self.kwargs['pk'])
+        base = EnquirySubmission.objects.filter(form_id=self.kwargs['pk']).distinct()
         if not user.is_super_admin:
             base = base.filter(form__created_by=user)
         return base.order_by('-submitted_at')

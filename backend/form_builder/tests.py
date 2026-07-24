@@ -6,7 +6,7 @@ from PIL import Image
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from .models import EnquiryForm
+from .models import EnquiryForm, EnquirySubmission, SubmissionStatus
 
 User = get_user_model()
 
@@ -93,3 +93,31 @@ class PublicFormSubmitRedirectDelayTests(APITestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data['redirect_delay_seconds'], 0)
+
+
+class AdminSubmissionsFilterTests(APITestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(
+            username='owner3', password='pass12345', role=User.Role.STAFF,
+        )
+        self.form = EnquiryForm.objects.create(title='Filter Form', created_by=self.owner)
+        self.sub_reviewed = EnquirySubmission.objects.create(
+            form=self.form, city='Mumbai', status=SubmissionStatus.REVIEWED,
+        )
+        self.sub_submitted = EnquirySubmission.objects.create(
+            form=self.form, city='Delhi', status=SubmissionStatus.SUBMITTED,
+        )
+        self.url = f'/api/admin/forms/{self.form.id}/submissions/'
+        self.client.force_authenticate(self.owner)
+
+    def test_filter_by_status(self):
+        response = self.client.get(self.url, {'status': 'reviewed'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        ids = [r['id'] for r in response.data['results']]
+        self.assertEqual(ids, [str(self.sub_reviewed.id)])
+
+    def test_search_by_city(self):
+        response = self.client.get(self.url, {'search': 'Delhi'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        ids = [r['id'] for r in response.data['results']]
+        self.assertEqual(ids, [str(self.sub_submitted.id)])
