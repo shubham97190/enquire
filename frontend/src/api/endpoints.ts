@@ -10,6 +10,7 @@ import type {
   FormSubmissionListItem,
   FormSubmissionDetail,
   FormReportData,
+  SubmissionStatusValue,
 } from '../types';
 
 // ─── Admin Auth ────────────────────────────────────────
@@ -66,6 +67,7 @@ export const submitPublicForm = (slug: string, data: {
     submission_id: string;
     is_redirect: boolean;
     redirect_url: string;
+    redirect_delay_seconds: number;
   }>(`/forms/${slug}/submit/`, data).then((r) => r.data);
 
 // ─── Form Builder: Admin CRUD ─────────────────────────
@@ -83,7 +85,9 @@ export const createAdminForm = (data: {
   is_active?: boolean;
   is_redirect?: boolean;
   redirect_url?: string;
+  redirect_delay_seconds?: number;
   email_notifications?: boolean;
+  footer_text?: string;
 }) =>
   api.post<FormBuilderForm>('/admin/forms/', data).then((r) => r.data);
 
@@ -94,7 +98,9 @@ export const updateAdminForm = (id: string, data: Partial<{
   is_active: boolean;
   is_redirect: boolean;
   redirect_url: string;
+  redirect_delay_seconds: number;
   email_notifications: boolean;
+  footer_text: string;
 }>) =>
   api.patch<FormBuilderForm>(`/admin/forms/${id}/`, data).then((r) => r.data);
 
@@ -103,6 +109,17 @@ export const deleteAdminForm = (id: string) =>
 
 export const duplicateAdminForm = (id: string) =>
   api.post<FormBuilderForm>(`/admin/forms/${id}/duplicate/`).then((r) => r.data);
+
+// ─── Form Builder: Admin Logo ──────────────────────────
+
+export const uploadFormLogo = (id: string, file: File) => {
+  const formData = new FormData();
+  formData.append('logo', file);
+  return api.post<FormBuilderForm>(`/admin/forms/${id}/logo/`, formData).then((r) => r.data);
+};
+
+export const deleteFormLogo = (id: string) =>
+  api.delete<FormBuilderForm>(`/admin/forms/${id}/logo/`).then((r) => r.data);
 
 // ─── Form Builder: Admin Fields ───────────────────────
 
@@ -128,6 +145,16 @@ export const getFormSubmissionDetail = (formId: string, subId: string) =>
 
 export const exportFormSubmissions = (formId: string) =>
   api.get(`/admin/forms/${formId}/submissions/export/`, { responseType: 'blob' }).then((r) => r.data);
+
+export const bulkUpdateSubmissions = (
+  formId: string,
+  ids: string[],
+  action: 'delete' | 'set_status',
+  status?: SubmissionStatusValue,
+) =>
+  api
+    .post<{ affected: number }>(`/admin/forms/${formId}/submissions/bulk/`, { ids, action, status })
+    .then((r) => r.data);
 
 // ─── Form Builder: Admin Report ───────────────────────
 
