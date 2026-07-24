@@ -13,6 +13,7 @@ urlpatterns = [
     path('admin/forms/', views.AdminFormListCreateView.as_view(), name='admin-form-list-create'),
     path('admin/forms/<uuid:pk>/', views.AdminFormDetailView.as_view(), name='admin-form-detail'),
     path('admin/forms/<uuid:pk>/duplicate/', views.AdminFormDuplicateView.as_view(), name='admin-form-duplicate'),
+    path('admin/forms/<uuid:pk>/logo/', views.AdminFormLogoView.as_view(), name='admin-form-logo'),
 
     # Admin: Fields
     path('admin/forms/<uuid:pk>/fields/', views.AdminFormFieldsBulkView.as_view(), name='admin-form-fields-bulk'),

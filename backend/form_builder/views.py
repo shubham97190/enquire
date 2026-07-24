@@ -4,6 +4,7 @@ from django.db.models import Count, Q
 from django.db.models.functions import TruncDate, TruncMonth
 from django.utils import timezone
 from rest_framework import generics, status, permissions
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -378,6 +379,46 @@ class AdminFormDetailView(generics.RetrieveUpdateDestroyAPIView):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         detail = EnquiryFormDetailSerializer(serializer.instance, context={'request': request})
+        return Response(detail.data)
+
+
+class AdminFormLogoView(APIView):
+    """Admin: Upload or remove a form's logo image."""
+    permission_classes = [IsAdminUser]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def _get_form_or_error(self, request, pk):
+        try:
+            form = EnquiryForm.objects.get(pk=pk)
+        except EnquiryForm.DoesNotExist:
+            return None, Response({'detail': 'Form not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if not request.user.is_super_admin and form.created_by != request.user:
+            return None, Response(
+                {'detail': 'You do not have permission to modify this form.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        return form, None
+
+    def post(self, request, pk):
+        form, error = self._get_form_or_error(request, pk)
+        if error:
+            return error
+        logo = request.FILES.get('logo')
+        if not logo:
+            return Response({'logo': ['This field is required.']}, status=status.HTTP_400_BAD_REQUEST)
+        form.logo = logo
+        form.save(update_fields=['logo', 'updated_at'])
+        detail = EnquiryFormDetailSerializer(form, context={'request': request})
+        return Response(detail.data)
+
+    def delete(self, request, pk):
+        form, error = self._get_form_or_error(request, pk)
+        if error:
+            return error
+        form.logo.delete(save=False)
+        form.logo = None
+        form.save(update_fields=['logo', 'updated_at'])
+        detail = EnquiryFormDetailSerializer(form, context={'request': request})
         return Response(detail.data)
 
 
