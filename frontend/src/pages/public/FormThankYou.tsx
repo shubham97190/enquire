@@ -38,17 +38,21 @@ export default function FormThankYou() {
     }
 
     const startedAt = Date.now();
+    let redirectTimeoutId: ReturnType<typeof setTimeout> | undefined;
     const interval = setInterval(() => {
       const remaining = Math.max(0, totalSeconds * 1000 - (Date.now() - startedAt));
       setRemainingMs(remaining);
       if (remaining <= 0) {
         clearInterval(interval);
         setFadingOut(true);
-        setTimeout(() => doRedirect(state.redirectUrl!), 200);
+        redirectTimeoutId = setTimeout(() => doRedirect(state.redirectUrl!), 200);
       }
     }, 100);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      if (redirectTimeoutId !== undefined) clearTimeout(redirectTimeoutId);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [shouldRedirect, totalSeconds]);
 
@@ -101,6 +105,12 @@ export default function FormThankYou() {
               </div>
               <a
                 href={state.redirectUrl}
+                onClick={(e) => {
+                  if (state.redirectUrl) {
+                    e.preventDefault();
+                    doRedirect(state.redirectUrl);
+                  }
+                }}
                 className="inline-block text-sm text-blue-600 hover:underline"
               >
                 Click here if not redirected automatically
