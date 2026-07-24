@@ -281,8 +281,12 @@ export default function FormBuilder() {
   const [isActive, setIsActive] = useState(true);
   const [isRedirect, setIsRedirect] = useState(false);
   const [redirectUrl, setRedirectUrl] = useState('');
+  const [redirectDelaySeconds, setRedirectDelaySeconds] = useState(5);
   const [emailNotifications, setEmailNotifications] = useState(true);
+  const [footerText, setFooterText] = useState('');
   const [settingsDirty, setSettingsDirty] = useState(false);
+  const [logoUploading, setLogoUploading] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   // Field editor
   const [editingField, setEditingField] = useState<Partial<FormBuilderField> | null>(null);
@@ -313,7 +317,9 @@ export default function FormBuilder() {
       setIsActive(data.is_active);
       setIsRedirect(data.is_redirect);
       setRedirectUrl(data.redirect_url);
+      setRedirectDelaySeconds(data.redirect_delay_seconds ?? 5);
       setEmailNotifications(data.email_notifications ?? true);
+      setFooterText(data.footer_text ?? '');
       setSettingsDirty(false);
     } catch {
       toast.error('Failed to load form');
@@ -336,9 +342,11 @@ export default function FormBuilder() {
       isActive !== form.is_active ||
       isRedirect !== form.is_redirect ||
       redirectUrl !== form.redirect_url ||
-      emailNotifications !== (form.email_notifications ?? true);
+      redirectDelaySeconds !== (form.redirect_delay_seconds ?? 5) ||
+      emailNotifications !== (form.email_notifications ?? true) ||
+      footerText !== (form.footer_text ?? '');
     setSettingsDirty(changed);
-  }, [title, description, unicodeText, isActive, isRedirect, redirectUrl, form]);
+  }, [title, description, unicodeText, isActive, isRedirect, redirectUrl, redirectDelaySeconds, emailNotifications, footerText, form]);
 
   const handleSaveSettings = async () => {
     if (!id) return;
@@ -351,7 +359,9 @@ export default function FormBuilder() {
         is_active: isActive,
         is_redirect: isRedirect,
         redirect_url: redirectUrl,
+        redirect_delay_seconds: redirectDelaySeconds,
         email_notifications: emailNotifications,
+        footer_text: footerText,
       });
       setForm(updated);
       setSettingsDirty(false);
@@ -360,6 +370,36 @@ export default function FormBuilder() {
       toast.error('Failed to save form');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleLogoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+    setLogoUploading(true);
+    try {
+      const updated = await api.uploadFormLogo(id, file);
+      setForm(updated);
+      toast.success('Logo updated');
+    } catch {
+      toast.error('Failed to upload logo');
+    } finally {
+      setLogoUploading(false);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+    }
+  };
+
+  const handleLogoRemove = async () => {
+    if (!id) return;
+    setLogoUploading(true);
+    try {
+      const updated = await api.deleteFormLogo(id);
+      setForm(updated);
+      toast.success('Logo removed');
+    } catch {
+      toast.error('Failed to remove logo');
+    } finally {
+      setLogoUploading(false);
     }
   };
 
@@ -628,6 +668,42 @@ export default function FormBuilder() {
                   placeholder="e.g. 🔥 or NEW"
                 />
               </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Logo</label>
+                <input ref={logoInputRef} type="file" accept="image/*" onChange={handleLogoSelect} className="hidden" />
+                {form?.logo_url ? (
+                  <div className="flex items-center gap-3">
+                    <img src={form.logo_url} alt="Form logo" className="h-12 w-12 object-contain rounded-lg border border-gray-200 bg-white" />
+                    <div className="flex flex-col gap-1">
+                      <button
+                        type="button"
+                        onClick={() => logoInputRef.current?.click()}
+                        disabled={logoUploading}
+                        className="text-xs font-semibold text-blue-600 hover:text-blue-800 disabled:opacity-50"
+                      >
+                        Replace
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleLogoRemove}
+                        disabled={logoUploading}
+                        className="text-xs font-semibold text-red-500 hover:text-red-700 disabled:opacity-50"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => logoInputRef.current?.click()}
+                    disabled={logoUploading}
+                    className="w-full border-2 border-dashed border-gray-200 rounded-lg px-3 py-4 text-center text-xs text-gray-500 hover:border-blue-400 hover:bg-blue-50/30 transition disabled:opacity-50"
+                  >
+                    {logoUploading ? 'Uploading…' : 'Click to upload a logo'}
+                  </button>
+                )}
+              </div>
               <div className="flex items-center gap-4 pt-1">
                 <label className="flex items-center gap-1.5 text-sm cursor-pointer select-none">
                   <input
@@ -676,17 +752,40 @@ export default function FormBuilder() {
                 </div>
               </div>
               {isRedirect && (
-                <div>
-                  <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Redirect URL</label>
-                  <input
-                    type="url"
-                    value={redirectUrl}
-                    onChange={(e) => setRedirectUrl(e.target.value)}
-                    className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    placeholder="https://example.com/thank-you"
-                  />
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Redirect URL</label>
+                    <input
+                      type="url"
+                      value={redirectUrl}
+                      onChange={(e) => setRedirectUrl(e.target.value)}
+                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      placeholder="https://example.com/thank-you"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Redirect Delay (seconds)</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={60}
+                      value={redirectDelaySeconds}
+                      onChange={(e) => setRedirectDelaySeconds(Math.max(0, Math.min(60, Number(e.target.value) || 0)))}
+                      className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    />
+                  </div>
                 </div>
               )}
+              <div>
+                <label className="block text-[11px] font-semibold text-gray-500 uppercase tracking-wide mb-1">Footer Text</label>
+                <input
+                  type="text"
+                  value={footerText}
+                  onChange={(e) => setFooterText(e.target.value)}
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                  placeholder="Powered by Enquire"
+                />
+              </div>
               <button
                 onClick={handleSaveSettings}
                 disabled={!settingsDirty || saving}
