@@ -843,6 +843,7 @@ export default function DynamicForm() {
           formTitle: form.title,
           isRedirect: result.is_redirect,
           redirectUrl: result.redirect_url,
+          redirectDelaySeconds: result.redirect_delay_seconds,
           submissionId: result.submission_id,
         },
       });

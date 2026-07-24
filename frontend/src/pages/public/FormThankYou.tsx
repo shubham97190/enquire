@@ -1,41 +1,74 @@
 import { useEffect, useState } from 'react';
-import { useLocation, useParams, Link } from 'react-router-dom';
+import { useLocation, useParams, Link, useNavigate } from 'react-router-dom';
 
 interface ThankYouState {
   formTitle?: string;
   isRedirect?: boolean;
   redirectUrl?: string;
+  redirectDelaySeconds?: number;
   submissionId?: string;
+}
+
+function isSameOrigin(url: string): boolean {
+  try {
+    return new URL(url, window.location.origin).origin === window.location.origin;
+  } catch {
+    return false;
+  }
 }
 
 export default function FormThankYou() {
   const { slug } = useParams<{ slug: string }>();
   const location = useLocation();
+  const navigate = useNavigate();
   const state = (location.state || {}) as ThankYouState;
-  const [countdown, setCountdown] = useState(5);
+  const totalSeconds = Math.max(0, state.redirectDelaySeconds ?? 5);
+  const [remainingMs, setRemainingMs] = useState(totalSeconds * 1000);
+  const [fadingOut, setFadingOut] = useState(false);
 
-  const shouldRedirect = state.isRedirect && state.redirectUrl;
+  const shouldRedirect = state.isRedirect && !!state.redirectUrl;
 
   useEffect(() => {
     if (!shouldRedirect) return;
 
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          window.location.href = state.redirectUrl!;
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    if (totalSeconds === 0) {
+      setFadingOut(true);
+      const t = setTimeout(() => doRedirect(state.redirectUrl!), 200);
+      return () => clearTimeout(t);
+    }
 
-    return () => clearInterval(timer);
-  }, [shouldRedirect, state.redirectUrl]);
+    const startedAt = Date.now();
+    const interval = setInterval(() => {
+      const remaining = Math.max(0, totalSeconds * 1000 - (Date.now() - startedAt));
+      setRemainingMs(remaining);
+      if (remaining <= 0) {
+        clearInterval(interval);
+        setFadingOut(true);
+        setTimeout(() => doRedirect(state.redirectUrl!), 200);
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shouldRedirect, totalSeconds]);
+
+  const doRedirect = (url: string) => {
+    if (isSameOrigin(url)) {
+      const target = new URL(url, window.location.origin);
+      navigate(target.pathname + target.search + target.hash);
+    } else {
+      window.location.href = url;
+    }
+  };
+
+  const progress = totalSeconds > 0 ? Math.max(0, Math.min(100, (remainingMs / (totalSeconds * 1000)) * 100)) : 0;
+  const secondsLeft = Math.ceil(remainingMs / 1000);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md text-center">
+      <div
+        className={`w-full max-w-md text-center transition-opacity duration-200 ${fadingOut ? 'opacity-0' : 'opacity-100'}`}
+      >
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
           {/* Success icon */}
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -54,9 +87,17 @@ export default function FormThankYou() {
           {shouldRedirect ? (
             <div className="space-y-4">
               <div className="bg-blue-50 rounded-xl p-4">
-                <p className="text-sm text-blue-700">
-                  You will be redirected in <strong>{countdown}</strong> second{countdown !== 1 ? 's' : ''}...
+                <p className="text-sm text-blue-700 mb-2">
+                  {totalSeconds === 0
+                    ? 'Redirecting...'
+                    : <>You will be redirected in <strong>{secondsLeft}</strong> second{secondsLeft !== 1 ? 's' : ''}...</>}
                 </p>
+                <div className="h-1.5 bg-blue-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-blue-500 rounded-full"
+                    style={{ width: `${progress}%`, transition: 'width 100ms linear' }}
+                  />
+                </div>
               </div>
               <a
                 href={state.redirectUrl}
