@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import * as api from '../../api/endpoints';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 import type {
   FormSubmissionListItem,
   FormSubmissionDetail as SubmissionDetailType,
@@ -215,6 +216,9 @@ export default function FormSubmissions() {
   const [statusFilter, setStatusFilter] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkActing, setBulkActing] = useState(false);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
 
   useEffect(() => {
     fetchSubmissions();
@@ -240,6 +244,58 @@ export default function FormSubmissions() {
   };
 
   const hasActiveFilters = !!(searchTerm.trim() || statusFilter || dateFrom || dateTo);
+
+  const toggleSelect = (subId: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(subId)) next.delete(subId);
+      else next.add(subId);
+      return next;
+    });
+  };
+
+  const toggleSelectAllOnPage = () => {
+    if (!data) return;
+    const pageIds = data.results.map((s) => s.id);
+    const allSelected = pageIds.every((pid) => selectedIds.has(pid));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allSelected) pageIds.forEach((pid) => next.delete(pid));
+      else pageIds.forEach((pid) => next.add(pid));
+      return next;
+    });
+  };
+
+  const handleBulkMarkReviewed = async () => {
+    if (!id || selectedIds.size === 0) return;
+    setBulkActing(true);
+    try {
+      await api.bulkUpdateSubmissions(id, Array.from(selectedIds), 'set_status', 'reviewed');
+      toast.success(`Marked ${selectedIds.size} submission(s) as reviewed`);
+      setSelectedIds(new Set());
+      await fetchSubmissions();
+    } catch {
+      toast.error('Failed to update submissions');
+    } finally {
+      setBulkActing(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!id || selectedIds.size === 0) return;
+    setBulkActing(true);
+    try {
+      await api.bulkUpdateSubmissions(id, Array.from(selectedIds), 'delete');
+      toast.success(`Deleted ${selectedIds.size} submission(s)`);
+      setSelectedIds(new Set());
+      setConfirmBulkDelete(false);
+      await fetchSubmissions();
+    } catch {
+      toast.error('Failed to delete submissions');
+    } finally {
+      setBulkActing(false);
+    }
+  };
 
   const handleExport = async () => {
     if (!id) return;
@@ -380,6 +436,15 @@ export default function FormSubmissions() {
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gradient-to-r from-slate-50 to-gray-50 border-b border-gray-100 text-xs uppercase tracking-wider">
+                  <th className="px-5 py-3.5 w-10">
+                    <input
+                      type="checkbox"
+                      checked={data.results.length > 0 && data.results.every((s) => selectedIds.has(s.id))}
+                      onChange={toggleSelectAllOnPage}
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      aria-label="Select all on this page"
+                    />
+                  </th>
                   <th className="text-left px-5 py-3.5 font-semibold text-slate-500">#</th>
                   <th className="text-left px-5 py-3.5 font-semibold text-slate-500">Date & Time</th>
                   <th className="text-left px-5 py-3.5 font-semibold text-slate-500">Submitter</th>
@@ -392,9 +457,18 @@ export default function FormSubmissions() {
                 {data.results.map((sub, idx) => (
                   <tr
                     key={sub.id}
-                    className="hover:bg-blue-50/40 transition-colors duration-150 cursor-pointer"
+                    className={`hover:bg-blue-50/40 transition-colors duration-150 cursor-pointer ${selectedIds.has(sub.id) ? 'bg-blue-50/60' : ''}`}
                     onClick={() => setSelectedSub(sub.id)}
                   >
+                    <td className="px-5 py-4" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(sub.id)}
+                        onChange={() => toggleSelect(sub.id)}
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                        aria-label={`Select submission ${sub.id}`}
+                      />
+                    </td>
                     {/* Row number */}
                     <td className="px-5 py-4">
                       <span className="text-xs font-bold text-gray-300">
@@ -511,6 +585,44 @@ export default function FormSubmissions() {
           </div>
         )}
       </div>
+
+      {/* Floating bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-slate-900 text-white rounded-2xl shadow-2xl px-5 py-3 flex items-center gap-4">
+          <span className="text-sm font-medium">{selectedIds.size} selected</span>
+          <button
+            onClick={handleBulkMarkReviewed}
+            disabled={bulkActing}
+            className="text-sm font-semibold text-emerald-300 hover:text-emerald-200 disabled:opacity-50"
+          >
+            Mark reviewed
+          </button>
+          <button
+            onClick={() => setConfirmBulkDelete(true)}
+            disabled={bulkActing}
+            className="text-sm font-semibold text-red-300 hover:text-red-200 disabled:opacity-50"
+          >
+            Delete
+          </button>
+          <button
+            onClick={() => setSelectedIds(new Set())}
+            className="text-sm text-slate-400 hover:text-slate-200"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
+      <ConfirmModal
+        open={confirmBulkDelete}
+        title="Delete selected submissions?"
+        message={`This will permanently delete ${selectedIds.size} submission(s). This cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        loading={bulkActing}
+        onConfirm={handleBulkDelete}
+        onCancel={() => setConfirmBulkDelete(false)}
+      />
 
       {/* Detail Drawer */}
       {selectedSub && id && (
