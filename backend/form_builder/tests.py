@@ -53,3 +53,43 @@ class FormLogoUploadTests(APITestCase):
         response = self.client.delete(self.url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertIsNone(response.data['logo_url'])
+
+
+class PublicFormSubmitRedirectDelayTests(APITestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(
+            username='owner2', password='pass12345', role=User.Role.STAFF,
+        )
+
+    def test_submit_response_includes_redirect_delay_when_redirecting(self):
+        form = EnquiryForm.objects.create(
+            title='Redirect Form',
+            created_by=self.owner,
+            is_redirect=True,
+            redirect_url='https://example.com/thanks',
+            redirect_delay_seconds=8,
+            email_notifications=False,
+        )
+        response = self.client.post(
+            f'/api/forms/{form.slug}/submit/',
+            {'answers': {'dummy': 'x'}},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['redirect_delay_seconds'], 8)
+
+    def test_submit_response_delay_is_zero_when_not_redirecting(self):
+        form = EnquiryForm.objects.create(
+            title='No Redirect Form',
+            created_by=self.owner,
+            is_redirect=False,
+            redirect_delay_seconds=8,
+            email_notifications=False,
+        )
+        response = self.client.post(
+            f'/api/forms/{form.slug}/submit/',
+            {'answers': {'dummy': 'x'}},
+            format='json',
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data['redirect_delay_seconds'], 0)

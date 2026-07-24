@@ -274,6 +274,7 @@ class PublicFormSubmitView(APIView):
             'submission_id': str(submission.id),
             'is_redirect': form.is_redirect,
             'redirect_url': form.redirect_url if form.is_redirect else '',
+            'redirect_delay_seconds': form.redirect_delay_seconds if form.is_redirect else 0,
         }
 
         # Fire background email notification if enabled
