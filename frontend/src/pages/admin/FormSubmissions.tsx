@@ -366,14 +366,14 @@ export default function FormSubmissions() {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); setSelectedIds(new Set()); }}
             placeholder="Search by city, country, or answer text…"
             className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
         <select
           value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); setSelectedIds(new Set()); }}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
         >
           <option value="">All statuses</option>
@@ -384,20 +384,20 @@ export default function FormSubmissions() {
         <input
           type="date"
           value={dateFrom}
-          onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
+          onChange={(e) => { setDateFrom(e.target.value); setPage(1); setSelectedIds(new Set()); }}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           aria-label="From date"
         />
         <input
           type="date"
           value={dateTo}
-          onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
+          onChange={(e) => { setDateTo(e.target.value); setPage(1); setSelectedIds(new Set()); }}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           aria-label="To date"
         />
         {hasActiveFilters && (
           <button
-            onClick={() => { setSearchTerm(''); setStatusFilter(''); setDateFrom(''); setDateTo(''); setPage(1); }}
+            onClick={() => { setSearchTerm(''); setStatusFilter(''); setDateFrom(''); setDateTo(''); setPage(1); setSelectedIds(new Set()); }}
             className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition"
           >
             Clear filters
@@ -565,7 +565,7 @@ export default function FormSubmissions() {
             </p>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setPage(page - 1)}
+                onClick={() => { setPage(page - 1); setSelectedIds(new Set()); }}
                 disabled={!data.previous}
                 className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium border border-gray-200 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition"
               >
@@ -574,7 +574,7 @@ export default function FormSubmissions() {
               </button>
               <span className="text-xs font-semibold text-gray-500 px-1">{page} / {totalPages}</span>
               <button
-                onClick={() => setPage(page + 1)}
+                onClick={() => { setPage(page + 1); setSelectedIds(new Set()); }}
                 disabled={!data.next}
                 className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium border border-gray-200 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-white transition"
               >
