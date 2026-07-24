@@ -23,6 +23,7 @@ urlpatterns = [
     # Admin: Submissions
     path('admin/forms/<uuid:pk>/submissions/', views.AdminFormSubmissionsView.as_view(), name='admin-form-submissions'),
     path('admin/forms/<uuid:pk>/submissions/export/', views.AdminFormSubmissionsExportView.as_view(), name='admin-form-submissions-export'),
+    path('admin/forms/<uuid:pk>/submissions/bulk/', views.AdminFormSubmissionsBulkView.as_view(), name='admin-form-submissions-bulk'),
     path('admin/forms/<uuid:pk>/submissions/<uuid:sub_pk>/', views.AdminFormSubmissionDetailView.as_view(), name='admin-form-submission-detail'),
 
     # Admin: Report

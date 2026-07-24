@@ -15,6 +15,7 @@ from .models import (
     EnquirySubmission,
     EnquirySubmissionAnswer,
     FieldType,
+    SubmissionStatus,
 )
 from .serializers import (
     EnquiryFormListSerializer,
@@ -600,6 +601,46 @@ class AdminFormSubmissionDetailView(generics.RetrieveAPIView):
     queryset = EnquirySubmission.objects.prefetch_related('answers__question')
     lookup_field = 'pk'
     lookup_url_kwarg = 'sub_pk'
+
+
+class AdminFormSubmissionsBulkView(APIView):
+    """Admin: Bulk delete or bulk status-change submissions for a form."""
+    permission_classes = [IsAdminUser]
+
+    def post(self, request, pk):
+        try:
+            form = EnquiryForm.objects.get(pk=pk)
+        except EnquiryForm.DoesNotExist:
+            return Response({'detail': 'Form not found.'}, status=status.HTTP_404_NOT_FOUND)
+        if not request.user.is_super_admin and form.created_by != request.user:
+            return Response(
+                {'detail': 'You do not have permission to modify this form.'},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        ids = request.data.get('ids')
+        action = request.data.get('action')
+        if not isinstance(ids, list) or not ids:
+            return Response({'ids': ['This field must be a non-empty list.']}, status=status.HTTP_400_BAD_REQUEST)
+        if action not in ('delete', 'set_status'):
+            return Response({'action': ['Must be "delete" or "set_status".']}, status=status.HTTP_400_BAD_REQUEST)
+
+        queryset = EnquirySubmission.objects.filter(form=form, id__in=ids)
+
+        if action == 'delete':
+            count = queryset.count()
+            queryset.delete()
+            return Response({'affected': count})
+
+        new_status = request.data.get('status')
+        valid_statuses = [c[0] for c in SubmissionStatus.choices]
+        if new_status not in valid_statuses:
+            return Response(
+                {'status': [f'Must be one of: {", ".join(valid_statuses)}']},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        count = queryset.update(status=new_status)
+        return Response({'affected': count})
 
 
 # ──────────────────────────────────────────────

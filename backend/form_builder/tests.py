@@ -121,3 +121,55 @@ class AdminSubmissionsFilterTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         ids = [r['id'] for r in response.data['results']]
         self.assertEqual(ids, [str(self.sub_submitted.id)])
+
+
+class AdminSubmissionsBulkActionTests(APITestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(
+            username='owner4', password='pass12345', role=User.Role.STAFF,
+        )
+        self.other_staff = User.objects.create_user(
+            username='other4', password='pass12345', role=User.Role.STAFF,
+        )
+        self.form = EnquiryForm.objects.create(title='Bulk Form', created_by=self.owner)
+        self.sub1 = EnquirySubmission.objects.create(form=self.form, status=SubmissionStatus.SUBMITTED)
+        self.sub2 = EnquirySubmission.objects.create(form=self.form, status=SubmissionStatus.SUBMITTED)
+        self.url = f'/api/admin/forms/{self.form.id}/submissions/bulk/'
+
+    def test_owner_can_bulk_set_status(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.post(self.url, {
+            'ids': [str(self.sub1.id), str(self.sub2.id)],
+            'action': 'set_status',
+            'status': 'reviewed',
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['affected'], 2)
+        self.sub1.refresh_from_db()
+        self.assertEqual(self.sub1.status, SubmissionStatus.REVIEWED)
+
+    def test_owner_can_bulk_delete(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.post(self.url, {
+            'ids': [str(self.sub1.id)],
+            'action': 'delete',
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['affected'], 1)
+        self.assertFalse(EnquirySubmission.objects.filter(id=self.sub1.id).exists())
+
+    def test_non_owner_staff_cannot_bulk_act(self):
+        self.client.force_authenticate(self.other_staff)
+        response = self.client.post(self.url, {
+            'ids': [str(self.sub1.id)],
+            'action': 'delete',
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_invalid_action_returns_400(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.post(self.url, {
+            'ids': [str(self.sub1.id)],
+            'action': 'nonsense',
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
