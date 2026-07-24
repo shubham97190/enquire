@@ -181,7 +181,7 @@ class PublicFormView(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        serializer = PublicFormSerializer(form)
+        serializer = PublicFormSerializer(form, context={'request': request})
         return Response(serializer.data)
 
 

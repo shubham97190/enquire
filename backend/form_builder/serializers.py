@@ -70,12 +70,14 @@ class EnquiryFormDetailSerializer(serializers.ModelSerializer):
     fields = EnquiryFormFieldSerializer(many=True, read_only=True)
     submission_count = serializers.SerializerMethodField()
     qr_code_url = serializers.SerializerMethodField()
+    logo_url = serializers.SerializerMethodField()
 
     class Meta:
         model = EnquiryForm
         fields = [
             'id', 'title', 'slug', 'description', 'unicode_text',
-            'is_active', 'is_redirect', 'redirect_url', 'email_notifications',
+            'is_active', 'is_redirect', 'redirect_url', 'redirect_delay_seconds',
+            'email_notifications', 'logo_url', 'footer_text',
             'qr_code_url', 'fields', 'submission_count',
             'created_by', 'created_at', 'updated_at',
         ]
@@ -92,13 +94,22 @@ class EnquiryFormDetailSerializer(serializers.ModelSerializer):
             return obj.qr_code.url
         return None
 
+    def get_logo_url(self, obj):
+        if obj.logo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.logo.url)
+            return obj.logo.url
+        return None
+
 
 class EnquiryFormCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = EnquiryForm
         fields = [
             'id', 'title', 'description', 'unicode_text',
-            'is_active', 'is_redirect', 'redirect_url', 'email_notifications',
+            'is_active', 'is_redirect', 'redirect_url', 'redirect_delay_seconds',
+            'email_notifications', 'footer_text',
         ]
         read_only_fields = ['id']
 
@@ -106,6 +117,11 @@ class EnquiryFormCreateUpdateSerializer(serializers.ModelSerializer):
         value = value.strip()
         if len(value) < 2:
             raise serializers.ValidationError('Title must be at least 2 characters.')
+        return value
+
+    def validate_redirect_delay_seconds(self, value):
+        if value < 0 or value > 60:
+            raise serializers.ValidationError('Must be between 0 and 60 seconds.')
         return value
 
 
@@ -126,13 +142,22 @@ class PublicFormFieldSerializer(serializers.ModelSerializer):
 
 class PublicFormSerializer(serializers.ModelSerializer):
     """Read-only form for public rendering."""
+    logo_url = serializers.SerializerMethodField()
 
     class Meta:
         model = EnquiryForm
         fields = [
             'id', 'title', 'slug', 'description', 'unicode_text',
-            'is_redirect', 'redirect_url',
+            'is_redirect', 'redirect_url', 'logo_url', 'footer_text',
         ]
+
+    def get_logo_url(self, obj):
+        if obj.logo:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.logo.url)
+            return obj.logo.url
+        return None
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
