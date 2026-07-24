@@ -221,10 +221,6 @@ export default function FormSubmissions() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, page, searchTerm, statusFilter, dateFrom, dateTo]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [searchTerm, statusFilter, dateFrom, dateTo]);
-
   const fetchSubmissions = async () => {
     if (!id) return;
     setLoading(true);
@@ -314,14 +310,14 @@ export default function FormSubmissions() {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => { setSearchTerm(e.target.value); setPage(1); }}
             placeholder="Search by city, country, or answer text…"
             className="w-full pl-9 pr-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           />
         </div>
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
         >
           <option value="">All statuses</option>
@@ -332,20 +328,20 @@ export default function FormSubmissions() {
         <input
           type="date"
           value={dateFrom}
-          onChange={(e) => setDateFrom(e.target.value)}
+          onChange={(e) => { setDateFrom(e.target.value); setPage(1); }}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           aria-label="From date"
         />
         <input
           type="date"
           value={dateTo}
-          onChange={(e) => setDateTo(e.target.value)}
+          onChange={(e) => { setDateTo(e.target.value); setPage(1); }}
           className="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
           aria-label="To date"
         />
         {hasActiveFilters && (
           <button
-            onClick={() => { setSearchTerm(''); setStatusFilter(''); setDateFrom(''); setDateTo(''); }}
+            onClick={() => { setSearchTerm(''); setStatusFilter(''); setDateFrom(''); setDateTo(''); setPage(1); }}
             className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition"
           >
             Clear filters
