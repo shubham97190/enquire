@@ -173,3 +173,35 @@ class AdminSubmissionsBulkActionTests(APITestCase):
             'action': 'nonsense',
         }, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class AdminSubmissionDetailOwnershipTests(APITestCase):
+    def setUp(self):
+        self.owner = User.objects.create_user(
+            username='owner5', password='pass12345', role=User.Role.STAFF,
+        )
+        self.other_staff = User.objects.create_user(
+            username='other5', password='pass12345', role=User.Role.STAFF,
+        )
+        self.super_admin = User.objects.create_user(
+            username='super5', password='pass12345', role=User.Role.SUPER_ADMIN,
+        )
+        self.form = EnquiryForm.objects.create(title='Detail Form', created_by=self.owner)
+        self.sub = EnquirySubmission.objects.create(form=self.form)
+        self.url = f'/api/admin/forms/{self.form.id}/submissions/{self.sub.id}/'
+
+    def test_owner_can_view_submission_detail(self):
+        self.client.force_authenticate(self.owner)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['id'], str(self.sub.id))
+
+    def test_super_admin_can_view_any_submission_detail(self):
+        self.client.force_authenticate(self.super_admin)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_non_owner_staff_cannot_view_submission_detail(self):
+        self.client.force_authenticate(self.other_staff)
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

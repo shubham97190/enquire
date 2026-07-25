@@ -595,12 +595,20 @@ class AdminFormSubmissionsView(generics.ListAPIView):
 
 
 class AdminFormSubmissionDetailView(generics.RetrieveAPIView):
-    """Admin: View a single submission with all answers."""
+    """Admin: View a single submission with all answers.
+    STAFF can only view submissions for forms they created.
+    """
     permission_classes = [IsAdminUser]
     serializer_class = SubmissionDetailSerializer
-    queryset = EnquirySubmission.objects.prefetch_related('answers__question')
     lookup_field = 'pk'
     lookup_url_kwarg = 'sub_pk'
+
+    def get_queryset(self):
+        user = self.request.user
+        base = EnquirySubmission.objects.filter(form_id=self.kwargs['pk']).prefetch_related('answers__question')
+        if not user.is_super_admin:
+            base = base.filter(form__created_by=user)
+        return base
 
 
 class AdminFormSubmissionsBulkView(APIView):
