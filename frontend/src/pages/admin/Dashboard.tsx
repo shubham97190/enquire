@@ -220,8 +220,23 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      <div className="space-y-6 max-w-7xl mx-auto animate-pulse">
+        <div className="h-7 w-48 bg-gray-200 rounded" />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          {Array.from({ length: 6 }, (_, i) => (
+            <div key={i} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex items-start gap-4">
+              <div className="w-11 h-11 bg-gray-200 rounded-xl flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <div className="h-2.5 bg-gray-200 rounded w-2/3" />
+                <div className="h-5 bg-gray-200 rounded w-1/2" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm h-72" />
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm h-72" />
+        </div>
       </div>
     );
   }
